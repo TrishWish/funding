@@ -1,0 +1,1771 @@
+<!doctype html><html><head>
+<meta name="robots" content="noindex, nofollow"><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Client funding dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --top:#141414; --side:#F7F7F6; --side-active:#EEEDEB; --bg:#F7F7F5; --panel:#FFFFFF;
+  --ink:#222222; --muted:#6B6B6B; --line:#E2E2E2; --line-strong:#C8C8C8; --th:#F1F1F1; --btn:#EDEDED;
+  /* a11y v3: link + focus = DS text-link / primary (Ocean/100) */
+  --link:#0649AD; --focus:#0649AD;
+  /* a11y v3: control edges (inputs, selects, pills, chart toggle) = DS grey80, 3:1+ on all surfaces */
+  --control:#7E7A73;
+  /* a11y v3: chart hues from the DS set that pass 3:1 on white */
+  --released:#127F66; --spent:#1D1761; --pending:#DC1252; --avail:#2888CD; --yet:#B47D00;
+  /* a11y v3: success text = forest-100 on emerald-10; destructive = berry-60 on cherry-10 */
+  --ok:#235765; --ok-bg:#E6F6F0; --under:#B25400; --under-bg:#FFF3E0; --over:#A80B59; --over-bg:#FBE7EE; --neutral-bg:#F1F1F1;
+  --time:#5E594F; --budget:#5E594F; --info:#1D5AB5; --info-bg:#EAF2FC; --info-line:#C9DDF5;
+  /* a11y v3: warning icon = DS mustard-100 */
+  --warn:#B47D00; --warn-line:#F0B840; --flex-bg:#F2F7FD; --flex-line:#CFE0F5; --stated-bg:#FAF6EC; --stated-line:#E8DDBF; --tag-flex-bg:#DCE9F9; --tag-flex-fg:#1D4F8F; --tag-stated-bg:#F1E6CC; --tag-stated-fg:#7A5200;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --top:#000; --side:#1A1A1A; --side-active:#2A2A2A; --bg:#121212; --panel:#181818;
+    --ink:#EDEDED; --muted:#A3A3A3; --line:#2E2E2E; --line-strong:#4A4A4A; --th:#222; --btn:#2A2A2A;
+    --link:#7AB6F0; --focus:#7AB6F0;
+    --ok:#7ED08F; --ok-bg:#1C3322; --under:#F0A860; --under-bg:#3A2A14; --over:#F28B82; --over-bg:#3E1F1D; --neutral-bg:#262626; --time:#5A5A5A; --budget:#9AA7B4; --control:#4A4A4A; --released:#16A062; --spent:#9440E0; --pending:#F44336; --avail:#F96A1F; --yet:#5A5A5A; --info:#7AB6F0; --info-bg:#1B2A3D; --info-line:#2D4562; --warn:#E3B15A; --warn-line:#8A6A1F; --flex-bg:#16212E; --flex-line:#2B3F57; --stated-bg:#241F14; --stated-line:#4A3E22; --tag-flex-bg:#26405F; --tag-flex-fg:#A9CBF5; --tag-stated-bg:#4A3E22; --tag-stated-fg:#F0D9A0;
+  }
+}
+:root[data-theme="dark"]{
+  --top:#000; --side:#1A1A1A; --side-active:#2A2A2A; --bg:#121212; --panel:#181818;
+  --ink:#EDEDED; --muted:#A3A3A3; --line:#2E2E2E; --line-strong:#4A4A4A; --th:#222; --btn:#2A2A2A;
+  --link:#7AB6F0; --focus:#7AB6F0;
+  --ok:#7ED08F; --ok-bg:#1C3322; --under:#F0A860; --under-bg:#3A2A14; --over:#F28B82; --over-bg:#3E1F1D; --neutral-bg:#262626; --time:#5A5A5A; --budget:#9AA7B4; --control:#4A4A4A; --released:#16A062; --spent:#9440E0; --pending:#F44336; --avail:#F96A1F; --yet:#5A5A5A; --info:#7AB6F0; --info-bg:#1B2A3D; --info-line:#2D4562; --warn:#E3B15A; --warn-line:#8A6A1F; --flex-bg:#16212E; --flex-line:#2B3F57; --stated-bg:#241F14; --stated-line:#4A3E22; --tag-flex-bg:#26405F; --tag-flex-fg:#A9CBF5; --tag-stated-bg:#4A3E22; --tag-stated-fg:#F0D9A0;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+*,*::before,*::after{box-sizing:inherit}
+[hidden]{display:none !important}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 "Open Sans","Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-variant-numeric:tabular-nums;min-height:100%}
+a{color:var(--link);text-decoration:none}
+a:hover{text-decoration:underline}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* a11y v3: DS icon-sm 16px / stroke 1.25; icon-md 20px / stroke 1.75 */
+svg.i{width:16px;height:16px;vertical-align:-3px;fill:none;stroke:currentColor;stroke-width:1.25;stroke-linecap:round;stroke-linejoin:round}
+.alerts .aic svg,.chart-disclaimer svg{stroke-width:1.75}
+
+/* demo bar */
+.demo{display:flex;flex-wrap:wrap;gap:8px 20px;align-items:center;justify-content:space-between;padding:6px 20px;background:#FFF8E1;color:#4E3B00;font-size:12.5px;border-bottom:1px solid #F1E0A6}
+.demo .seg{display:inline-flex;border:1px solid #C9B36A;border-radius:3px;overflow:hidden;margin-left:6px}
+.demo .seg button{background:transparent;border:0;padding:3px 10px;cursor:pointer;color:inherit}
+.demo .seg button[aria-pressed="true"]{background:#4E3B00;color:#FFF8E1}
+
+/* top bar */
+.topbar{background:var(--top);color:#fff;height:44px;display:flex;align-items:center;padding:0 20px;gap:30px;font-size:14px;position:sticky;top:env(safe-area-inset-top,0px);z-index:10}
+.topbar .logo{font-weight:600;width:260px}
+.topbar nav{display:flex;gap:22px;flex:1;overflow:hidden}
+.topbar nav span{white-space:nowrap;opacity:.85}
+.topbar nav span.on{opacity:1;font-weight:600}
+.topbar .search{border:1px solid #666;border-radius:3px;padding:3px 10px;color:#aaa;font-size:12.5px;min-width:130px}
+.topbar .icons{display:flex;gap:18px;opacity:.9}
+
+/* layout */
+.shell{display:flex;min-height:calc(100vh - 44px)}
+.sidebar{width:300px;flex:none;background:var(--side);padding:24px 12px;border-right:1px solid var(--line)}
+.sidebar .back{display:flex;align-items:center;gap:10px;color:var(--ink);font-size:14px;padding:0 10px;min-height:28px;margin-bottom:18px;text-decoration:none}
+.sidebar .back:hover{text-decoration:underline}
+.sidebar ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.sidebar li button{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:none;border:0;border-radius:6px;padding:0 10px;min-height:40px;cursor:pointer;font-size:14px;color:var(--ink)}
+.sidebar li button:hover{background:var(--th)}
+.sidebar li button[aria-current="page"]{background:var(--side-active);font-weight:600}
+.sidebar li button .count{margin-left:auto;color:var(--muted);font-size:12.5px;font-weight:400}
+
+.content{flex:1;min-width:0;padding:24px 40px 60px;background:var(--panel)}
+.crumbs{display:flex;align-items:center;flex-wrap:wrap;gap:10px;min-height:28px;color:var(--muted);font-size:14px;margin-bottom:22px}
+.crumbs svg.toggle{width:16px;height:16px;margin-right:8px;color:var(--ink)}
+.crumbs a{color:var(--muted);text-decoration:none}
+.crumbs a:hover{text-decoration:underline}
+.crumbs svg.sep{width:12px;height:12px;stroke-width:1.25;color:var(--muted)}
+.crumbs .cur{color:var(--ink)}
+.title{display:flex;justify-content:space-between;align-items:flex-start;gap:20px}
+.title h1{margin:0;font-size:30px;font-weight:400;line-height:1.2}
+.title h1 b{font-weight:700}
+.title p{margin:6px 0 0;color:var(--ink);font-size:15px}
+#plan-days,#badge-int,#plan-type,.nw{white-space:nowrap}
+.title p .pipe{color:var(--line-strong);margin:0 10px;display:inline-block}
+.title .actions{display:flex;gap:18px;white-space:nowrap;padding-top:8px}
+.linkact{background:none;border:0;padding:0;cursor:pointer;color:var(--ink);display:inline-flex;align-items:center;gap:6px;font-size:14px}
+.linkact:hover{text-decoration:underline}
+.linkbtn{background:none;border:0;padding:0;color:var(--link);cursor:pointer;font-size:inherit}
+.linkbtn:hover{text-decoration:underline}
+
+/* summary strip */
+.figures{display:grid;grid-template-columns:repeat(5,1fr);border:1px solid var(--line);margin-top:22px}
+.figures.figures-4{grid-template-columns:repeat(4,1fr)}
+.figures.figures-3{grid-template-columns:repeat(3,1fr)}
+.fig{padding:12px 16px;border-left:1px solid var(--line);background:var(--panel)}
+.fig:first-child{border-left:0}
+.fig .lbl{font-weight:700;font-size:14px}
+.fig .val{font-size:26px;margin-top:2px;line-height:1.2}
+.fig-util .val{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.fig-util .val .tag{font-size:12px;line-height:18px}
+.fig .val.missing{font-size:15px;color:var(--muted);margin-top:6px}
+.fig .sub{color:var(--ink);font-size:14px;margin-top:3px}
+.strip{display:flex;flex-wrap:wrap;gap:10px 26px;align-items:center;padding:12px 0 4px;position:relative}
+.chip{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:14px}
+.chip::before{content:"";width:10px;height:10px;border-radius:50%;background:currentColor}
+.chip.ok{color:var(--ok)}.chip.under{color:var(--under)}.chip.over{color:var(--over)}
+.strip .note{color:var(--muted)}
+.strip .spacer{flex:1}
+details.release summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:10px}
+details.release summary::-webkit-details-marker{display:none}
+details.release summary .chev{transition:transform .15s}
+details.release[open] summary .chev{transform:rotate(180deg)}
+details.release .body{position:absolute;right:0;z-index:5;margin-top:8px;background:var(--panel);border:1px solid var(--line-strong);padding:10px 14px;min-width:360px;box-shadow:0 6px 18px rgba(0,0,0,.12)}
+details.release table{width:100%;border-collapse:collapse;font-size:13.5px}
+details.release td{padding:5px 0;border-top:1px solid var(--line)}
+details.release tr:first-child td{border-top:0}
+details.release td:last-child{text-align:right}
+
+/* tabs (option A) */
+.tabbar{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-top:18px;overflow-x:auto}
+.tab{background:none;border:0;border-bottom:3px solid transparent;padding:10px 14px;cursor:pointer;color:var(--muted);white-space:nowrap;font-size:14px;margin-bottom:-1px}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink);font-weight:600}
+.tab .count{color:var(--muted);font-weight:400;margin-left:5px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.tab-panel[hidden]{display:none}
+.tab-panel{padding-top:22px}
+.two{display:grid;grid-template-columns:7fr 5fr;gap:24px}
+.panel{background:var(--panel);border:1px solid var(--line);margin-bottom:24px}
+.panel > .head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 18px;border-bottom:1px solid var(--line)}
+.panel > .head h2{margin:0;font-size:18px;font-weight:400}
+.panel > .head .sub{color:var(--muted);font-size:13px;margin-left:10px}
+.panel > .body{padding:16px 18px}
+.panel.flat > .body{padding:0}
+.tablewrap{overflow-x:auto;position:relative}
+
+/* controls in their style */
+.select{border:1px solid var(--control);border-radius:3px;background:var(--panel);color:var(--ink);padding:7px 30px 7px 12px;font:inherit;font-size:14px;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237E7A73' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
+.select.sm{padding:4px 26px 4px 10px;font-size:13px}
+.input{border:1px solid var(--control);border-radius:3px;background:var(--panel);color:var(--ink);padding:7px 12px;font:inherit;font-size:14px}
+.btn{background:var(--btn);border:1px solid var(--btn);border-radius:3px;padding:8px 16px;cursor:pointer;font-size:14px}
+.btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.sm{padding:5px 12px;font-size:13px}
+.filters{display:flex;flex-wrap:wrap;gap:14px 20px;align-items:flex-end;padding:14px 18px;border-bottom:1px solid var(--line)}
+.filters label{display:flex;flex-direction:column;gap:6px;font-size:14px}
+.filters .select,.filters .input{min-width:190px}
+/* Invoices: DS DataTable layout. Filter bar, table and pagination are separate blocks. */
+.filterbar{display:flex;flex-wrap:wrap;gap:14px 16px;align-items:flex-end;margin-bottom:28px}
+.filterbar label{display:flex;flex-direction:column;gap:6px;font-size:14px}
+.filterbar .select,.filterbar .input{min-width:190px;min-height:40px;border-radius:4px}
+.filterbar .btn{min-height:40px;border-radius:4px}
+@media (max-width:640px){.filterbar label{flex:1 1 100%;min-width:0}.filterbar .select,.filterbar .input{min-width:0;width:100%}}
+.filterbar .hs-err{flex-basis:100%;margin-top:-6px}
+.filterbar .is-set{border-color:var(--link);box-shadow:inset 0 0 0 1px var(--link);font-weight:600}
+#invoice-table,table.dt{border-collapse:separate;border-spacing:0}
+#invoice-table thead th:first-child,table.dt thead th:first-child{border-top-left-radius:8px}
+#invoice-table thead th:last-child,table.dt thead th:last-child{border-top-right-radius:8px}
+#invoice-table tbody tr:last-child td,table.data.dt tbody tr:last-child td{border-bottom:1px solid var(--line)}
+/* DataTable blocks (Documents, Scheduled changes, Expired, History): tools above, forms as separate cards, no panel */
+.dt-tools{display:flex;justify-content:flex-end;align-items:center;gap:22px;margin-bottom:12px}
+.dt-tools .linkact{color:var(--ink)}
+.dt-show{display:inline-flex;align-items:center;gap:8px;font-size:14px}
+.dt-block .sc-form{background:var(--side);border:1px solid var(--line);border-radius:8px;margin-bottom:20px}
+.dt-block .sc-ok{margin:0 0 16px}
+.dt-block .filter-summary{padding:0 0 12px;border-bottom:0}
+.dt-block .empty{padding:26px 14px}
+.inv-foot{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;margin-top:12px;font-size:14px}
+.pager2{display:flex;align-items:center;gap:4px}
+.pg{min-width:32px;height:32px;padding:0 8px;border:1px solid transparent;border-radius:4px;background:none;cursor:pointer;color:var(--ink)}
+.pg:hover{background:var(--th)}
+.pg[aria-current="page"]{border-color:var(--line);font-weight:600;background:var(--panel)}
+.pg-step{display:inline-flex;align-items:center;gap:6px;font-weight:600}
+.pg-step:disabled{color:var(--muted);cursor:default;background:none}
+.toolbar{display:flex;justify-content:flex-end;gap:22px;padding:10px 18px;font-size:14px}
+
+/* tables in their style */
+table.data{width:100%;border-collapse:collapse;font-size:14px}
+table.data thead th{background:var(--th);text-align:left;font-weight:700;padding:12px 14px;white-space:nowrap}
+table.data td{padding:14px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+table.data tbody tr:last-child td{border-bottom:none}
+table.data .num,table.data th.num{text-align:right;white-space:nowrap}
+table.data .cat small{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
+table.data .group td{background:var(--panel);font-weight:700;padding:12px 14px 6px;border-bottom:none}
+table.data .group td span{font-weight:400;color:var(--muted);margin-left:8px}
+table.data .total td{font-weight:700;background:var(--th)}
+table.data .rowact{text-align:right;white-space:nowrap}
+table.data .rowact button{background:none;border:0;padding:2px 6px;cursor:pointer;color:var(--ink)}
+.tfoot{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;font-size:14px;color:var(--ink)}
+.tfoot .pager{display:flex;align-items:center;gap:8px}
+.tfoot .pager .select{min-width:70px}
+.empty{padding:26px 18px;color:var(--muted)}
+.viewlink{display:inline-flex;align-items:center;gap:6px}
+.filepick{display:flex;align-items:center;gap:12px;min-height:36px}
+.filepick .btn{cursor:pointer}
+.sr-file{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden}
+.filepick .sr-file:focus-visible + label{outline:2px solid var(--focus);outline-offset:2px}
+.fgrid.cols4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.sc-actions.split{justify-content:space-between;align-items:center}
+.filter-summary{display:flex;align-items:center;gap:14px;padding:10px 20px;color:var(--muted);font-size:13.5px;border-bottom:1px solid var(--line)}
+.filter-summary[hidden]{display:none}
+.sos .pname{font-weight:600}
+.sos .pcode{color:var(--muted);font-size:12.5px}
+.sos .pdesc{color:var(--muted);font-size:13px;margin-top:6px;max-width:520px}
+.sos .flag{display:inline-block;padding:1px 9px;border:1px solid var(--line-strong);border-radius:999px;font-size:12px;margin:0 4px 4px 0;white-space:nowrap}
+.sos table.data td{vertical-align:top}
+.sc-form{background:var(--bg);border-bottom:1px solid var(--line);padding:18px 20px 20px}
+.sc-form[hidden],.sc-ok[hidden]{display:none}
+.sc-form-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:16px}
+.sc-form-head h3{margin:0;font-size:16px;font-weight:600}
+.fgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px 20px}
+.field{display:flex;flex-direction:column;gap:6px;border:0;padding:0;margin:0;min-width:0}
+.field > label,.field > legend{font-weight:600;font-size:13.5px;padding:0;margin-bottom:6px}
+fieldset.field > legend{float:left;width:100%}
+fieldset.field > legend + *{clear:both}
+.field.full{grid-column:1/-1}
+.field.span2{grid-column:span 2}
+.field .input,.field .select{width:100%}
+.field textarea.input{resize:vertical;min-height:84px;font-family:inherit}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.req{color:var(--over)}
+.pills{display:inline-flex;gap:8px}
+.pill{position:relative;cursor:pointer}
+.pill input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.pill span{display:inline-block;min-width:76px;text-align:center;padding:7px 18px;border:1px solid var(--control);border-radius:999px;background:var(--panel)}
+.pill input:checked + span{background:var(--ink);color:var(--panel);border-color:var(--ink);font-weight:600}
+.pill input:focus-visible + span{outline:2px solid var(--focus);outline-offset:2px}
+.input.invalid,.select.invalid{border-color:var(--over)}
+.err{color:var(--over);font-size:12.5px}
+.err[hidden]{display:none}
+.sc-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
+.sc-ok{margin:14px 20px 0;padding:9px 12px;background:var(--ok-bg);color:var(--ok);border-left:4px solid var(--ok);font-size:13.5px}
+.empty b{color:var(--ink);font-weight:600;display:block;margin-bottom:2px}
+.placeholder{margin:18px;border:1px dashed var(--line-strong);padding:26px;color:var(--muted);text-align:center;font-size:13.5px}
+
+/* utilisation */
+.util-period{color:var(--muted);margin-bottom:14px}
+/* a11y v3: single .bars rule (the duplicate flex rule collapsed this grid) */
+.bars{display:grid;grid-template-columns:minmax(140px,200px) minmax(120px,1fr) 50px minmax(150px,200px);gap:10px 14px;align-items:center}
+.bars .row-legend{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:4px 16px;font-size:12px;color:var(--muted);margin-bottom:2px}
+.bars .row-legend span{white-space:nowrap}
+.bars .row-legend span::before{content:"";display:inline-block;width:9px;height:9px;margin-right:5px;vertical-align:-1px;background:var(--c)}
+.gap-note{display:block;margin-top:3px;color:var(--muted);font-size:12px;font-weight:400}
+.bars .name small{display:block;color:var(--muted);font-size:12.5px}
+.track{height:16px;background:var(--neutral-bg);position:relative;overflow:hidden;border-radius:2px}
+.track .fill{position:absolute;inset:0 auto 0 0}
+.fill.time{background:var(--time)}
+.fill.spent{background:var(--spent)}
+.fill.pending{background:var(--pending)}
+.track .marker{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink)}
+.bars .pct{text-align:right;font-weight:700;font-size:15px}
+.verdict{margin-top:16px;padding:12px 14px;display:flex;gap:12px;align-items:flex-start;border-left:4px solid}
+.verdict.ok{background:var(--ok-bg);border-color:var(--ok)}.verdict.under{background:var(--under-bg);border-color:var(--under)}.verdict.over{background:var(--over-bg);border-color:var(--over)}
+.verdict p{margin:0}
+details.how{margin-top:14px;font-size:13.5px}
+details.how summary{cursor:pointer;color:var(--link)}
+details.how .f{background:var(--th);border:1px solid var(--line);padding:10px 12px;margin-top:8px;white-space:pre-wrap;line-height:1.55;font-size:13px}
+.mini{display:flex;align-items:center;gap:10px;white-space:nowrap}
+.mini .track{flex:1;height:8px}
+.mini .track .marker{top:-3px;bottom:-3px}
+.mini .v{min-width:44px;text-align:right;font-size:14px;color:var(--ink)}
+.budget-table .cname{font-weight:600}
+#provider-table tbody td:first-child{font-weight:600}
+.budget-panel > .head h2{font-size:16px;line-height:24px;font-weight:600}
+.infohead{display:flex;align-items:center;gap:6px}
+.infotip{position:relative;display:inline-flex}
+.infobtn{display:grid;place-items:center;width:24px;height:24px;padding:0;border:0;border-radius:4px;background:none;color:var(--muted);cursor:pointer}
+.infobtn:hover,.infobtn[aria-expanded="true"]{color:var(--link);background:var(--th)}
+/* desktop: show the description on hover as well as on click */
+@media (hover:hover) and (pointer:fine){.infotip:hover .infopop[hidden]{display:block !important}.infotip:hover::after{content:"";position:absolute;left:0;right:0;top:100%;height:8px}}
+.infopop{position:absolute;left:0;top:calc(100% + 6px);z-index:6;width:max-content;max-width:320px;padding:8px 12px;background:var(--panel);color:var(--ink);border:1px solid var(--line-strong);border-radius:4px;box-shadow:0 2px 8px rgba(40,39,50,.12);font-size:14px;line-height:20px;font-weight:400}
+.budget-meta{margin:0 0 20px;font-size:14px;line-height:20px;display:flex;flex-wrap:wrap;align-items:center;gap:4px 0}
+.budget-meta .pipe{color:var(--line-strong);margin:0 16px}
+.budget-meta .who{font-weight:700;margin-right:16px}
+.page-toolbar .linkact{color:var(--link)}
+/* icon-only invoice links with a tooltip on hover and keyboard focus */
+.icotip{position:relative;display:inline-grid;place-items:center;width:28px;height:28px;border-radius:4px;vertical-align:middle}
+.icotip svg.i{width:20px;height:20px;stroke-width:1.75}
+button.icotip{background:none;border:0;padding:0;cursor:pointer}
+table.data .rowact button.invbtn{color:var(--ink);padding:0}
+.invbtn:hover{background:var(--th)}
+.rowicons{display:inline-flex;gap:4px}
+.usedflag{display:inline-flex;align-items:center;gap:4px;padding:1px 6px;border-radius:2px;font-weight:700}
+.usedflag.warn{background:var(--under-bg);color:var(--under)}
+.usedflag.over{background:var(--over-bg);color:var(--over)}
+.usedflag svg.i{width:14px;height:14px;stroke-width:2}
+/* column header tooltips (Plan overview tables): shown below the header on hover or keyboard focus */
+th[data-tip]{position:relative}
+th[data-tip]::after{content:attr(data-tip);position:absolute;left:8px;top:calc(100% - 4px);z-index:6;width:240px;white-space:normal;text-align:left;padding:6px 10px;border-radius:4px;background:var(--ink);color:var(--panel);font-size:12px;line-height:16px;font-weight:400;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .1s}
+th.num[data-tip]::after,th[data-tip]:nth-last-child(2)::after,th[data-tip]:last-child::after{left:auto;right:8px}
+th[data-tip]:hover::after,th[data-tip]:focus-within::after{opacity:1;visibility:visible}
+#prov-drawer{width:720px}
+#pd-table thead th{white-space:normal}
+#pd-table td:first-child,#invoice-table td:first-child,#invoice-table td:last-child{white-space:nowrap}
+#pd-table td:first-child .pd-prov{display:block;white-space:normal;font-weight:400;font-size:12.5px;line-height:16px;margin-top:2px}
+#invoice-table tbody td:nth-child(2),#invoice-table tbody td:nth-child(6){font-weight:600}
+/* fit the panel: fixed columns, status pills wrap, so view/download icons are always visible */
+#pd-table{table-layout:fixed}
+#pd-table .status{white-space:normal;line-height:16px;padding:2px 8px}
+#pd-table td.rowact{text-align:right}
+.pd-count{display:block;font-size:16px;line-height:24px;font-weight:600}
+.pd-count b{font-weight:700}
+.pd-summary{align-items:center;margin-top:20px;margin-bottom:20px !important}
+.pd-filters{display:grid;grid-template-columns:1fr 1fr;gap:12px 14px;align-items:end;margin:4px 0 16px;clear:both}
+.pd-filters label{display:flex;flex-direction:column;gap:6px;font-size:14px}
+.pd-filters .pd-status{grid-column:1/-1}
+.pd-filters .select,.pd-filters .input{width:100%;min-height:40px;border-radius:4px}
+.pd-filters .btn{justify-self:start;min-height:40px;border-radius:4px}
+.pd-filters .is-set{border-color:var(--link);box-shadow:inset 0 0 0 1px var(--link);font-weight:600}
+.pd-summary{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px;font-size:14px}
+#pd-table td{padding:10px 10px}
+#pd-table thead th{padding:10px}
+.pd-cat{display:block;font-size:12.5px;margin-top:2px}
+.notebtn{position:relative}
+.ncount{position:absolute;top:-2px;right:-4px;min-width:16px;height:16px;padding:0 4px;border-radius:999px;background:var(--ink);color:var(--panel);font-size:10.5px;line-height:16px;font-weight:700;text-align:center}
+#notes-drawer{width:520px}
+.nd-list{list-style:none;margin:16px 0 0;padding:0;display:flex;flex-direction:column;gap:12px;clear:both}
+.nd-list li{padding:12px 14px;border:1px solid var(--line);border-radius:6px}
+.nd-meta{display:flex;justify-content:space-between;gap:12px;font-size:13px;margin-bottom:4px}
+.nd-list p{margin:0;font-size:14px;line-height:20px}
+.nd-empty{margin-top:16px;clear:both}
+.nd-add{display:flex;flex-direction:column;gap:6px;margin-top:20px;padding-top:16px;border-top:1px solid var(--line)}
+.nd-add label{font-weight:600;font-size:14px}
+.nd-add .btn{align-self:flex-start;margin-top:6px}
+.nd-ok{margin:8px 0 0}
+/* H2s per MYP Design System: dialog / side panel titles = heading-page (20/28 bold); section headings inside a page = heading-section (16/24 semibold) */
+#drawer h2,#prov-drawer h2,#notes-drawer h2,#cat-modal h2,#util-modal h2{font-size:20px;line-height:28px;font-weight:700}
+#budget-tables .panel > .head h2,#graphs .gp-head h2,.panel.sos > .head h2{font-size:16px;line-height:24px;font-weight:600}
+.reltip{position:relative}
+.reltip::after{content:attr(data-tip);position:absolute;right:0;bottom:calc(100% + 6px);z-index:6;width:250px;white-space:normal;text-align:left;padding:6px 10px;border-radius:4px;background:var(--ink);color:var(--panel);font-size:12px;line-height:16px;font-weight:400;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .1s}
+.reltip:hover::after,.reltip:focus-visible::after{opacity:1;visibility:visible}
+.usedtip{position:relative;display:inline-flex;align-items:center;gap:4px;cursor:help;border-bottom:1px dotted var(--control)}
+.usedtip.usedflag{border-bottom:0}
+.usedtip::after{content:attr(data-tip);position:absolute;right:0;bottom:calc(100% + 6px);z-index:6;width:240px;white-space:normal;text-align:left;padding:6px 10px;border-radius:4px;background:var(--ink);color:var(--panel);font-size:12px;line-height:16px;font-weight:400;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .1s}
+.usedtip:hover::after,.usedtip:focus-visible::after{opacity:1;visibility:visible}
+.noinv{color:var(--control);cursor:default}
+.icotip::after{content:attr(data-tip);position:absolute;right:0;bottom:calc(100% + 6px);z-index:6;white-space:nowrap;padding:4px 8px;border-radius:4px;background:var(--ink);color:var(--panel);font-size:12px;line-height:16px;font-weight:400;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .1s}
+.icotip:hover::after,.icotip:focus-visible::after{opacity:1;visibility:visible}
+.budget-table td.rowact,#provider-table td.rowact{text-align:center}
+.h1row{display:flex;align-items:center;flex-wrap:wrap;gap:4px 20px}
+.h1row .linkact{color:var(--link);margin-left:auto}
+#summary-header .title > div{flex:1;min-width:0}
+/* time-left banner: DS cyan-10 fill, cyan-50 border */
+:root{--banner-bg:#F6FCFE;--banner-line:#A4E3F6}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--banner-bg:#16212E;--banner-line:#2B3F57}}
+:root[data-theme="dark"]{--banner-bg:#16212E;--banner-line:#2B3F57}
+.period-banner{margin-top:24px;padding:16px 20px 18px;background:var(--banner-bg);border:1px solid var(--banner-line);border-radius:4px}
+.period-banner .pb-track{background:var(--panel);box-shadow:inset 0 0 0 1px #2888CD;height:6px;border-radius:3px} /* quieter: thinner, ocean-60 (3.8:1 on white) */
+.period-banner .pb-fill{background:#2888CD}
+.pb-top{display:flex;flex-wrap:wrap;align-items:center;gap:8px 28px;font-size:14px}
+svg.pb-ico{width:20px;height:20px;stroke-width:1.75;margin-right:-14px}
+.pb-link{margin-left:auto;color:var(--link)}
+.pb-track{margin:12px 0 0 34px;height:12px;background:var(--line);border-radius:2px;overflow:hidden}
+.pb-fill{height:100%;background:#1D1761} /* navy-100: neutral, time passing */
+@media (max-width:640px){.pb-link{margin-left:0}.pb-track{margin-left:0}}
+.period-banner + .figures{margin-top:24px}
+.summary-alerts{margin-top:36px}
+.summary-alerts .sec-title{font-size:20px;line-height:28px;margin-bottom:12px}
+#figures > .fig:first-child,#budget-figures > .fig:first-child{background:#F7F7F6}
+#budget-period-banner{margin-top:0}
+#budget-period-banner + #budget-figures{margin-top:24px}
+.section-sub{margin:8px 0 0;font-size:14px;line-height:20px;color:var(--ink)}
+.page-toolbar{display:flex;justify-content:flex-end;gap:22px;margin-bottom:12px}
+.sortbtn{display:inline-flex;align-items:center;gap:4px;background:none;border:0;padding:0;margin:0;font:inherit;font-weight:700;color:inherit;cursor:pointer;white-space:nowrap}
+th.num .sortbtn{flex-direction:row}
+.sortbtn .sorti{color:var(--control);width:14px;height:14px;stroke-width:2;flex:none}
+table.data thead th[aria-sort]{vertical-align:bottom}
+.sortbtn{text-align:left}
+th.num .sortbtn{text-align:right}
+/* wide tables: let header labels wrap so every column stays in view */
+#provider-table thead th,#invoice-table thead th,#expired-table thead th,.budget-table thead th{white-space:normal}
+#provider-table .sortbtn,#invoice-table .sortbtn,#expired-table .sortbtn,.budget-table .sortbtn{white-space:normal}
+th.sorted .sortbtn .sorti{color:var(--ink)}
+.sortbtn:hover{text-decoration:underline}
+#budget-figures{margin:0 0 32px}
+@media (max-width:640px){.infopop{max-width:240px}}
+/* DS heading-page: page title 20px / 28px bold */
+#util-title:focus,#section-title:focus{outline:none}
+table.data .rowact button.linkbtn{color:var(--link);padding:2px 0}
+#util-panel{scroll-margin-top:60px}
+#section-title{font-size:28px;line-height:36px;font-weight:700}
+.budget-toolbar{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:10px 22px;margin-bottom:8px}
+#tab-budget{padding-top:36px}
+.budget-actions{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center}
+.budget-table{table-layout:fixed;min-width:820px}
+.budget-table col.c-cat{width:24%}.budget-table col.c-mgmt{width:12%}.budget-table col.c-num{width:10.5%}.budget-table col.c-util{width:16%}.budget-table col.c-act{width:6%}
+.budget-table tfoot .total td{border-bottom:0}
+.tag{display:inline-block;padding:1px 7px;border-radius:2px;font-size:12px;font-weight:600;white-space:nowrap}
+.tag.ok{background:var(--ok-bg);color:var(--ok)}.tag.under{background:var(--under-bg);color:var(--under)}.tag.over{background:var(--over-bg);color:var(--over)}
+.tag.neutral{background:var(--neutral-bg);color:var(--muted)}
+.mutedtext{color:var(--muted)}
+
+/* chart */
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:14px;color:var(--ink)}
+.legend span::before{content:"";display:inline-block;width:11px;height:11px;margin-right:6px;vertical-align:-1px;background:var(--c)}
+.chart-disclaimer{display:flex;gap:14px;align-items:flex-start;padding:14px 16px;background:var(--panel);border:1px solid var(--warn-line);border-radius:6px;font-size:14px;color:var(--ink)}
+.chart-disclaimer svg{width:20px;height:20px;flex:none;margin-top:1px;color:var(--warn)}
+.chart-disclaimer b{display:block;font-weight:700;margin-bottom:2px}
+.chart-top{display:flex;justify-content:space-between;align-items:center;gap:16px}
+.viewtoggle{display:inline-flex;gap:2px;padding:2px;background:var(--th);border:1px solid var(--control);border-radius:6px;flex:none}
+.viewtoggle button{width:34px;height:28px;display:grid;place-items:center;background:none;border:1px solid transparent;border-radius:4px;color:var(--muted);cursor:pointer}
+.viewtoggle button[aria-pressed="true"]{background:var(--panel);border-color:var(--control);color:var(--ink)}
+.chart-split{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:center;margin-top:18px}
+.chart-visual{display:flex;align-items:flex-end;justify-content:center;min-height:240px}
+.chart[hidden],.pie-wrap[hidden]{display:none}
+.bcol{display:flex;flex-direction:column;align-items:center;justify-content:flex-end}
+.bval{font-size:14px;margin-bottom:8px;white-space:nowrap}
+.brect{width:80px;border-radius:4px}
+.pie-wrap{display:flex;align-items:center;justify-content:center;min-height:240px}
+.pie-wrap svg{width:170px;height:170px;flex:none}
+.chart-details{min-width:0}
+.cd-title{font-weight:700;font-size:15px}
+.cd-meta{font-size:14px;margin-top:2px}
+.cd-row{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
+.cd-row.first{margin-top:14px}
+.cd-row.sep{border-bottom:2px solid var(--line)}
+.cd-row .sw{width:12px;height:12px;border-radius:3px;flex:none}
+.cd-row .nm{flex:1}
+.cd-row.total{border-bottom:0;font-weight:700}
+.cd-note{color:var(--muted);font-size:12.5px}
+.g-controls{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+.g-left{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+.g-eq{color:var(--muted);font-size:13px}
+.gcard{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:16px 18px;min-width:0;display:flex;flex-direction:column}
+.gcard header{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.gcard h4{margin:0;font-size:16px;font-weight:700}
+.gsub{color:var(--muted);font-size:13px;margin-top:2px}
+.gbody{display:grid;grid-template-columns:minmax(150px,190px) 1fr;gap:22px;align-items:end;margin-top:auto;padding-top:14px}
+.gvis{display:flex;align-items:flex-end;justify-content:center;min-height:120px}
+.mbars{display:flex;align-items:flex-end;gap:10px}
+.mb{width:40px;border-radius:3px}
+.gcard .cd-row{padding:8px 0}
+.gcard .cd-row.first{margin-top:0}
+.cd-row.sub{font-weight:600}
+.gcard.overview .gbody{grid-template-columns:minmax(200px,230px) 1fr}
+.gcard header .viewtoggle{margin-left:auto}
+.viewtoggle.compact{padding:1px}
+.viewtoggle.compact button{width:30px;height:26px}
+.g-right{display:flex;align-items:center;gap:10px}
+.ggrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.gpurpose{margin-top:34px}
+.gp-head{display:flex;align-items:center;gap:12px}
+.gp-pick{margin-left:auto;display:flex;align-items:center;gap:10px}
+.gp-pick label{font-size:14px;color:var(--muted);white-space:nowrap}
+.gp-pick .select{min-width:300px;max-width:420px}
+.gp-head + .ggrid,.gp-head + .gcard{margin-top:14px}
+#graphs > .gpurpose:first-child{margin-top:0}
+.gp-head h2{margin:0;font-size:20px;font-weight:700}
+.sec{margin-top:30px}
+.sec:first-child{margin-top:0}
+.sec-title{display:flex;align-items:center;gap:10px;margin:0 0 14px;font-size:26px;font-weight:700}
+.alert-count{display:inline-block;min-width:24px;padding:0 8px;border-radius:999px;background:var(--ink);color:var(--panel);font-size:13px;font-weight:700;line-height:24px;text-align:center}
+.alerts-box{background:var(--panel);border:1px solid var(--line);border-radius:6px}
+.alerts{list-style:none;margin:0;padding:0}
+.alerts li{display:flex;align-items:flex-start;gap:14px;padding:14px 18px;border-top:1px solid var(--line)}
+.alerts li:first-child{border-top:0}
+.alerts .aic{flex:none;margin-top:1px}
+.alerts .aic svg{width:20px;height:20px}
+.alerts .over .aic{color:var(--over)}
+.alerts .warn .aic{color:var(--warn)}
+.alerts .info .aic{color:var(--link)}
+.alerts .atxt{flex:1;display:flex;flex-direction:column;gap:2px}
+.alerts .atxt b{font-weight:700}
+.alerts .atxt span{color:var(--muted);font-size:13.5px}
+.alerts .none{padding:16px 18px;color:var(--muted)}
+.gp-desc{color:var(--muted);margin:10px 0 16px}
+.ggroup{margin-bottom:26px}
+.ghead + .glabel,.ggroup > .glabel:first-child{margin-top:0}
+.ghead{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.ghead p{margin:0;font-size:14px}
+.glabel{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin:18px 0 10px}
+.gtag{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap}
+.gtag.flex,.gtag.stated{background:transparent;color:var(--ink);border:1px solid var(--line-strong);padding:1px 9px}
+.gtag.combined{background:var(--ink);color:var(--panel)}
+.gcard.big{border:2px solid var(--ink)}
+.g-disclaimer{margin-top:18px}
+@media (max-width:1100px){.ggrid{grid-template-columns:1fr}.gcard.overview .gbody{grid-template-columns:1fr}}
+.chart-rule{border:0;border-top:1px solid var(--line);margin:22px 0 18px}
+.title .actions .linkact{color:var(--link)}
+
+/* attention */
+.attn{list-style:none;margin:0;padding:0}
+.attn li{display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+.attn li:first-child{border-top:0;padding-top:0}
+.attn .dot{width:9px;height:9px;border-radius:50%;flex:none;margin-top:7px}
+.attn .dot.under{background:var(--under)}.attn .dot.ok{background:var(--ok)}.attn .dot.info{background:var(--line-strong)}
+.attn p{margin:0}.attn small{color:var(--muted)}
+.status{display:inline-block;padding:1px 8px;border-radius:2px;font-size:12.5px;white-space:nowrap}
+.status.paid{background:var(--neutral-bg)}
+.status.approved{background:var(--ok-bg);color:var(--ok)}
+.status.awaiting{background:var(--under-bg);color:var(--under)}
+.status.hold{background:var(--neutral-bg);color:var(--ink)}
+.status.rejected{background:var(--over-bg);color:var(--over)}
+.inline-add{display:inline-flex;gap:6px;align-items:center}
+.inline-add .input{width:130px;padding:3px 8px;font-size:13px}
+
+/* drawer */
+.drawer{position:fixed;top:0;right:0;bottom:0;width:460px;max-width:100%;background:var(--panel);border-left:1px solid var(--line);box-shadow:-10px 0 28px rgba(0,0,0,.14);transform:translateX(100%);visibility:hidden;transition:transform .2s,visibility 0s linear .2s;z-index:30;padding:calc(20px + env(safe-area-inset-top,0px)) 24px 24px;overflow:auto}
+.drawer.open{transform:none;visibility:visible;transition:transform .2s,visibility 0s}
+.drawer h2{margin:0 0 4px;font-size:22px;font-weight:400}
+.drawer .sub{color:var(--ink);margin-bottom:16px}
+.drawer .close{float:right}
+.rel{border:1px solid var(--line);margin-bottom:14px}
+.rel .rh{display:flex;justify-content:space-between;padding:10px 14px;font-weight:600;background:var(--th)}
+.rel .rh small{display:block;color:var(--muted);font-weight:400}
+.rel table{width:100%;border-collapse:collapse;font-size:13.5px}
+.rel td{padding:7px 14px;border-top:1px solid var(--line)}
+.rel td:last-child{text-align:right}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:29;display:none}
+.scrim.open{display:block}
+.scrim.modal-scrim{z-index:39}
+
+/* per-category funding schedule modal */
+.cat-modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.97);background:var(--panel);border-radius:6px;box-shadow:0 24px 64px rgba(0,0,0,.28);padding:24px 26px 22px;width:600px;max-width:92vw;z-index:41;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .15s,transform .15s,visibility 0s linear .15s}
+.cat-modal.open{opacity:1;visibility:visible;transform:translate(-50%,-50%) scale(1);pointer-events:auto;transition:opacity .15s,transform .15s,visibility 0s}
+.cat-modal .x{position:absolute;top:12px;right:14px;background:none;border:0;font-size:22px;line-height:1;color:var(--muted);cursor:pointer;padding:4px}
+.cat-modal h2{margin:0 0 12px;font-size:19px;font-weight:600;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.cat-modal .roll{margin:0 0 14px;color:var(--ink);font-size:14px}
+.cm-sum{margin:0 0 16px;font-size:14px;line-height:20px}
+.cm-sum b{font-weight:700}
+.cat-modal .count{margin:0 0 10px;font-size:14px;font-weight:700}
+.cat-modal .tw{max-height:320px;overflow:auto;border:1px solid var(--line);border-radius:4px}
+.cat-modal table{width:100%;border-collapse:collapse;font-size:13.5px}
+.cat-modal thead th{position:sticky;top:0;background:var(--th);text-align:left;padding:9px 12px;font-weight:700;white-space:nowrap}
+.cat-modal thead th.num,.cat-modal td.num{text-align:right}
+.cat-modal td{padding:9px 12px;border-top:1px solid var(--line);white-space:nowrap}
+.cat-modal tbody tr:first-child td{border-top:0}
+.cat-modal td em{font-style:normal;color:var(--muted)}
+.cat-modal .btn{margin-top:16px}
+/* funding period schedule: right-hand side panel, like Release schedule */
+#cat-modal{top:0;right:0;bottom:0;left:auto;width:520px;max-width:100%;border-radius:0;opacity:1;transform:translateX(100%);box-shadow:-10px 0 28px rgba(0,0,0,.14);border-left:1px solid var(--line);overflow:auto;padding:calc(20px + env(safe-area-inset-top,0px)) 24px 24px;transition:transform .2s,visibility 0s linear .2s}
+#cat-modal.open{transform:none;transition:transform .2s,visibility 0s}
+#cat-modal .tw{max-height:none;overflow:visible}
+.nr-card{padding:14px 16px 12px;margin:0 0 16px;background:var(--banner-bg);border:1px solid var(--banner-line);border-radius:6px}
+.nr-lbl{margin:0 0 6px;font-size:14px;font-weight:700}
+.nr-row{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
+.nr-date{font-size:16px;line-height:24px;font-weight:700}
+.nr-amt{font-size:20px;line-height:28px}
+.nr-date{margin-top:2px}
+.nr-days{display:flex;align-items:baseline;gap:6px}
+.nr-num{font-size:20px;line-height:28px;font-weight:700}
+.nr-unit{font-size:14px}
+.nr-track{margin-top:12px;height:6px;border-radius:3px;background:var(--panel);box-shadow:inset 0 0 0 1px #2888CD;overflow:hidden}
+.nr-fill{height:100%;background:#2888CD}
+.nr-scale{display:flex;justify-content:space-between;margin-top:4px;font-size:12px}
+.sched-tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0 0 16px}
+.sched-tile{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border:1px solid var(--line);border-radius:6px}
+.st-lbl{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:13.5px}
+.sched-tile.st-rel .st-lbl svg{color:var(--ok)}
+.sched-tile.st-sch .st-lbl svg{color:var(--info)}
+.st-val{font-size:20px;line-height:28px}
+.st-sub{font-size:13px}
+.rs-pill{display:inline-block;padding:1px 8px;border-radius:999px;font-size:12.5px;font-weight:600;white-space:nowrap}
+.rs-pill.rel{background:var(--ok-bg);color:var(--ok)}
+.rs-pill.sch{background:var(--info-bg);color:var(--info)}
+#cat-modal td,#cat-modal thead th{white-space:normal;padding:9px 10px}
+#cat-modal td.num,#cat-modal td:nth-child(2){white-space:nowrap}
+#cat-modal h2{padding-right:32px;border-bottom:0;padding-bottom:0;margin-bottom:8px}
+@media (prefers-reduced-motion:reduce){#cat-modal{transition:none}}
+.budget-toolbar .util-link{color:var(--link)}
+.util-modal p{margin:0 0 14px;font-size:14px;line-height:20px}
+.um-list{display:grid;grid-template-columns:max-content 1fr;gap:10px 20px;margin:0 0 16px;padding:14px 16px;background:var(--side);border:1px solid var(--line);border-radius:4px;font-size:14px;align-items:center}
+.um-list dt{font-weight:700}
+.um-list dd{margin:0}
+.um-note{color:var(--ink)}
+
+@media (max-width:1180px){
+  .sidebar{width:230px}
+  .content{padding:20px 22px 50px}
+  .figures{grid-template-columns:repeat(3,1fr)}
+  .fig{border-left:0;border-top:1px solid var(--line)}
+  .two{grid-template-columns:1fr}
+}
+@media (max-width:820px){
+  .shell{flex-direction:column}
+  .sidebar{width:auto;border-right:0;border-bottom:1px solid var(--line)}
+  .topbar .logo{width:auto}
+}
+@media (max-width:900px){.fgrid,.fgrid.cols4{grid-template-columns:1fr 1fr}.field.span2{grid-column:1/-1}}
+/* a11y v3: reflow to 320px (WCAG 1.4.10) */
+.demo .seg{flex-wrap:wrap}
+@media (max-width:820px){
+  .bars{grid-template-columns:minmax(0,1fr) 50px}
+  .bars .name,.bars .ustatus{grid-column:1/-1}
+  .bars .ustatus{margin-bottom:8px}
+  .gp-head{flex-wrap:wrap}
+  .gp-pick{margin-left:0;width:100%;flex-wrap:wrap}
+  .gp-pick .select{min-width:0;width:100%;max-width:none}
+}
+@media (max-width:640px){
+  .content{padding:16px 16px 40px}
+  .title{flex-wrap:wrap}
+  .title .actions{white-space:normal;padding-top:0}
+  .title p .pipe{margin:0 6px}
+  .figures,.figures.figures-3,.figures.figures-4{grid-template-columns:1fr 1fr}
+  .fig .val{font-size:20px}
+  .fgrid,.fgrid.cols4{grid-template-columns:1fr}
+  .gbody,.gcard.overview .gbody{grid-template-columns:1fr}
+  .chart-top,.g-controls{flex-wrap:wrap}
+  .panel > .head{flex-wrap:wrap}
+  .sc-form-head{flex-wrap:wrap;gap:6px}
+  .drawer{width:100%}
+}
+@media (max-width:400px){
+  .figures,.figures.figures-3,.figures.figures-4{grid-template-columns:1fr}
+}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- a11y v3: Lucide icons (lucide.dev, v0.460 geometry) per the MYP Design System icon set -->
+    <symbol id="i-archive" viewBox="0 0 24 24"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></symbol>
+    <symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></symbol>
+    <symbol id="i-briefcase" viewBox="0 0 24 24"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/></symbol>
+    <symbol id="i-calendar-days" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></symbol>
+    <symbol id="i-chart-column" viewBox="0 0 24 24"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></symbol>
+    <symbol id="i-chart-line" viewBox="0 0 24 24"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="m19 9-5 5-4-4-3 3"/></symbol>
+    <symbol id="i-chart-pie" viewBox="0 0 24 24"><path d="M21 12c.552 0 1.005-.449.95-.998a10 10 0 0 0-8.953-8.951c-.55-.055-.998.398-.998.95v8a1 1 0 0 0 1 1z"/><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/></symbol>
+    <symbol id="i-chevrons-up-down" viewBox="0 0 24 24"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></symbol>
+    <symbol id="i-chevron-up" viewBox="0 0 24 24"><path d="m18 15-6-6-6 6"/></symbol>
+    <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-circle-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+    <symbol id="i-message-square" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
+    <symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+    <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-file-text" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></symbol>
+    <symbol id="i-folder" viewBox="0 0 24 24"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></symbol>
+    <symbol id="i-funnel" viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></symbol>
+    <symbol id="i-history" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></symbol>
+    <symbol id="i-layout-grid" viewBox="0 0 24 24"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><path d="M3 12h.01"/><path d="M3 18h.01"/><path d="M3 6h.01"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M8 6h13"/></symbol>
+    <symbol id="i-octagon-alert" viewBox="0 0 24 24"><path d="M7.86 2h8.28L22 7.86v8.28L16.14 22H7.86L2 16.14V7.86z"/><path d="M12 8v4"/><path d="M12 16h.01"/></symbol>
+    <symbol id="i-panel-left" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/></symbol>
+    <symbol id="i-pencil" viewBox="0 0 24 24"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
+    <symbol id="i-sheet" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><line x1="3" x2="21" y1="9" y2="9"/><line x1="3" x2="21" y1="15" y2="15"/><line x1="9" x2="9" y1="9" y2="21"/><line x1="15" x2="15" y1="9" y2="21"/></symbol>
+    <symbol id="i-triangle-alert" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+  </defs>
+</svg>
+
+<div class="demo">
+  <div><b>Prototype.</b> Amounts and dates are illustrative; today is treated as 22 Sep 2026.</div>
+  <div>
+    Plan type
+    <span class="seg" role="group" aria-label="Plan type">
+      <button type="button" data-variant="pace-int" aria-pressed="true">PACE + integration</button>
+      <button type="button" data-variant="pace-manual" aria-pressed="false">PACE + non-integration</button>
+      <button type="button" data-variant="non-pace" aria-pressed="false">Non-PACE</button>
+    </span>
+  </div>
+</div>
+
+<div class="topbar">
+  <div class="logo">Subscriber logo</div>
+  <nav><span>CRM</span><span class="on">Funding</span><span>Time &amp; Attendance</span><span>HR</span><span>SIL</span><span>Forms</span><span>Marketing</span><span>Seamless SMSF</span><span>Life Plan</span><span>Links</span></nav>
+  <div class="search">Search (Alt-s)</div>
+  <div class="icons"><span>&#128276;</span><span>?</span><span>&#9776;</span></div>
+</div>
+
+<div class="shell">
+  <aside class="sidebar" aria-label="Participant navigation">
+    <a class="back" href="#"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-arrow-left"/></svg>Back to Engagements</a>
+    <ul id="side-sections">
+      <li><button type="button" data-tab="budget" aria-current="page"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-list"/></svg>Plan overview</button></li>
+      <li><button type="button" data-tab="providers"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-briefcase"/></svg>Provider budgets</button></li>
+      <li><button type="button" data-tab="spending"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-chart-column"/></svg>Spending vs budget</button></li>
+      <li><button type="button" data-tab="invoices"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-file-text"/></svg>Invoices</button></li>
+      <li><button type="button" data-tab="documents"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-folder"/></svg>Documents</button></li>
+      <li><button type="button" data-tab="changes"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-calendar-days"/></svg>Scheduled changes</button></li>
+      <li><button type="button" data-tab="expired"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-archive"/></svg>Expired engagement / plans</button></li>
+      <li><button type="button" data-tab="history"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-history"/></svg>History</button></li>
+    </ul>
+  </aside>
+
+  <main class="content">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <svg class="i toggle" aria-hidden="true"><use href="#i-panel-left"/></svg>
+      <a href="#">Funding</a><svg class="i sep" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+      <a href="#">NDIS</a><svg class="i sep" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+      <a href="#">Dashboard</a><svg class="i sep" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+      <a href="#">Mensah, Jordan</a><svg class="i sep" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+      <span class="cur" id="crumb-section" aria-current="page">Plan overview</span>
+    </nav>
+
+    <!-- Plan summary header: Summary section only -->
+    <div id="summary-header">
+      <div class="title">
+        <div>
+          <div class="h1row"><h1><b>Mensah, Jordan</b></h1><button class="linkact" type="button"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-eye"/></svg>View engagement</button></div>
+          <p><span class="nw"><b>NDIS:</b> 430118227</span><span class="pipe">|</span><span id="plan-type">PACE plan</span><span class="pipe">|</span><span class="nw">15 Oct 2025 to 14 Oct 2027</span><span class="pipe">|</span><span class="nw"><b>Account manager:</b> Priya Nair</span><span class="pipe" id="pipe-int">|</span><span id="badge-int">NDIS Integration connected</span></p>
+        </div>
+      </div>
+
+      <div class="period-banner" id="period-banner"></div>
+      <div class="figures figures-4" id="figures" aria-label="Plan summary"></div>
+    </div>
+
+    <!-- Plain heading: every other section -->
+    <div class="title" id="section-header" hidden>
+      <div><h1 id="section-title"></h1><p class="section-sub" id="section-sub" hidden></p></div>
+    </div>
+
+    <!-- PLAN BUDGET -->
+    <section class="tab-panel" id="tab-budget" role="tabpanel">
+      <div class="budget-toolbar">
+        <div class="budget-actions">
+          <button class="linkact util-link" type="button" id="util-open"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-chart-column"/></svg>How utilisation is calculated</button>
+          <button class="linkact" type="button"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-sheet"/></svg>Columns</button>
+        </div>
+      </div>
+      <div id="budget-tables"></div>
+    </section>
+
+    <!-- SPENDING VS BUDGET -->
+    <section class="tab-panel" id="tab-spending" role="tabpanel" hidden>
+      <div class="g-controls">
+        <div class="g-left"><div class="legend" id="chart-legend"></div><span class="g-eq" id="g-eq"></span></div>
+      </div>
+      <div id="graphs"></div>
+    </section>
+
+    <!-- PROVIDER BUDGETS -->
+    <section class="tab-panel" id="tab-providers" role="tabpanel" hidden>
+      <div class="filterbar" role="search" aria-label="Filter provider budgets">
+        <label>Provider <select class="select" id="pf-prov"><option value="">All providers</option></select></label>
+        <label>Support category <select class="select" id="pf-cat"><option value="">All support categories</option></select></label>
+        <button class="btn" type="button" id="pf-clear">Clear filters</button>
+      </div>
+      <div class="page-toolbar"><button class="linkact" type="button" title="Opens this participant's engagement"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg>Allocate provider budget</button></div>
+      <div class="panel flat">
+        <div class="body tablewrap">
+          <table class="data" id="provider-table" aria-labelledby="section-title">
+            <thead><tr><th scope="col" data-tip="The provider delivering supports to this participant.">Provider</th><th scope="col" data-tip="The NDIS support category this provider's services are claimed against.">Support category</th><th scope="col" data-tip="Who manages these funds: plan managed, self-managed or NDIA managed.">Management type</th><th scope="col" class="num" data-tip="The budget set aside for this provider within the support category. 'No allocation' means no limit has been set.">Allocated</th><th scope="col" class="num" data-tip="Invoices from this provider paid to date.">Spent</th><th scope="col" class="num" data-tip="Invoices from this provider submitted to the NDIS but not yet reconciled.">Pending</th><th scope="col" class="num" data-tip="Allocated minus spent minus pending.">Remaining</th><th scope="col" class="num" data-tip="Spent plus pending as a share of the allocation. Over 75% is flagged as nearly spent.">Used</th><th scope="col"><span class="sr">Invoices</span></th></tr></thead>
+            <tbody></tbody>
+          </table>
+          <div class="empty" id="prov-empty" hidden><b>No provider budgets match these filters.</b>Clear a filter to see all providers.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- INVOICES -->
+    <section class="tab-panel" id="tab-invoices" role="tabpanel" hidden>
+      <div class="filterbar" id="invoices-panel" role="search" aria-label="Filter invoices">
+        <label>Provider <select class="select" id="flt-prov"><option value="">All providers</option></select></label>
+        <label>Support category <select class="select" id="flt-cat"><option value="">All support categories</option></select></label>
+        <label>Service start date <input class="input" type="date" id="flt-from"></label>
+        <label>Service end date <input class="input" type="date" id="flt-to"></label>
+        <label>Status <select class="select" id="flt-status"><option value="">All invoices</option><option>Awaiting client approval</option><option>Awaiting plan manager approval</option><option>Awaiting client and plan manager approval</option><option>On hold by client</option><option>On hold by plan manager</option><option>Approved</option><option>Rejected</option></select></label>
+        <button class="btn" type="button" id="flt-clear">Clear filters</button>
+      </div>
+      <div class="tablewrap">
+        <table class="data" id="invoice-table" aria-labelledby="section-title">
+          <thead><tr><th data-tip="The provider's invoice number.">Invoice</th><th data-tip="The provider that issued the invoice.">Provider</th><th data-tip="The NDIS support category the invoice is claimed against.">Support category</th><th data-tip="The date the provider issued the invoice.">Invoice date</th><th data-tip="The dates of the supports billed on this invoice.">Period</th><th class="num" data-tip="The invoice total, including GST where it applies.">Amount</th><th data-tip="Where the invoice is in the approval process, e.g. awaiting approval, on hold, approved or rejected.">Status</th><th data-tip="The date the invoice was approved and sent to the NDIS for payment.">Date approved</th></tr></thead>
+          <tbody></tbody>
+        </table>
+        <div class="empty" id="inv-empty" hidden><b>No invoices match these filters.</b>Clear a filter or widen the date range.</div>
+      </div>
+      <div class="inv-foot"><span id="inv-count" role="status"></span><nav class="pager2" id="inv-pager" aria-label="Invoice pages"></nav></div>
+    </section>
+
+    <!-- DOCUMENTS -->
+    <section class="tab-panel" id="tab-documents" role="tabpanel" hidden>
+      <div class="dt-block">
+        <div class="dt-tools"><button class="linkact" type="button" id="doc-open"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-upload"/></svg>Upload document</button></div>
+
+        <div class="sc-form" id="doc-form" role="group" aria-labelledby="doc-form-title" hidden>
+          <div class="sc-form-head"><h3 id="doc-form-title">Upload document</h3><span class="mutedtext"><span class="req">*</span> Required</span></div>
+          <div class="fgrid">
+            <div class="field"><label for="doc-type">Document type <span class="req">*</span></label><select class="select" id="doc-type"></select><div class="err" id="err-doc-type" hidden></div></div>
+            <div class="field span2"><label for="doc-file">File <span class="req">*</span></label>
+              <div class="filepick"><input type="file" id="doc-file" class="sr-file"><label for="doc-file" class="btn">Choose file</label><span id="doc-file-name" class="mutedtext">No file chosen</span></div>
+              <div class="err" id="err-doc-file" hidden></div></div>
+          </div>
+          <div class="sc-actions"><button class="btn" type="button" id="doc-cancel">Cancel</button><button class="btn primary" type="button" id="doc-save">Upload document</button></div>
+        </div>
+        <div class="sc-ok" id="doc-ok" role="status" hidden>Document uploaded.</div>
+
+        <div class="tablewrap">
+          <table class="data dt" aria-labelledby="section-title">
+            <thead><tr><th>Name</th><th>Created date/time</th><th><span class="sr">Download</span></th></tr></thead>
+            <tbody id="doc-body"></tbody>
+          </table>
+        </div>
+        <div class="inv-foot"><span id="doc-count" role="status"></span></div>
+      </div>
+    </section>
+
+    <!-- SCHEDULED CHANGES -->
+    <section class="tab-panel" id="tab-changes" role="tabpanel" hidden>
+      <div class="dt-block">
+        <div class="dt-tools"><div style="display:flex;gap:22px;align-items:center"><label class="dt-show">Show <select class="select sm"><option>Existing</option></select></label><button class="linkact" type="button" id="sc-open"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg>Add change</button></div></div>
+
+        <div class="sc-form" id="sc-form" role="group" aria-labelledby="sc-form-title" hidden>
+          <div class="sc-form-head"><h3 id="sc-form-title">Add scheduled change</h3><span class="mutedtext"><span class="req">*</span> Required</span></div>
+          <div class="fgrid">
+            <div class="field"><label for="sc-start">Start date <span class="req">*</span></label><input class="input" type="date" id="sc-start"><div class="err" id="err-start" hidden></div></div>
+            <div class="field"><label for="sc-end">End date <span class="req">*</span></label><input class="input" type="date" id="sc-end"><div class="err" id="err-end" hidden></div></div>
+            <div class="field"><label for="sc-prov">Provider <span class="req">*</span></label><select class="select" id="sc-prov"></select><div class="err" id="err-prov" hidden></div></div>
+
+            <fieldset class="field"><legend>Appropriate notice given to the provider? <span class="req">*</span></legend>
+              <div class="pills"><label class="pill"><input type="radio" name="sc-notice" value="Yes"><span>Yes</span></label><label class="pill"><input type="radio" name="sc-notice" value="No"><span>No</span></label></div>
+              <div class="err" id="err-notice" hidden></div></fieldset>
+            <div class="field"><label for="sc-ndate">Notice date <span class="req">*</span></label>
+              <input class="input" type="date" id="sc-ndate"><div class="err" id="err-ndate" hidden></div></div>
+            <div class="field"><label for="sc-ntime">Notice time <span class="req">*</span></label><input class="input" type="time" id="sc-ntime">
+              <div class="err" id="err-ntime" hidden></div></div>
+
+            <div class="field full"><label for="sc-reason">Reason <span class="req">*</span></label><textarea class="input" id="sc-reason" rows="3"></textarea><div class="err" id="err-reason" hidden></div></div>
+          </div>
+          <div class="sc-actions"><button class="btn" type="button" id="sc-cancel">Cancel</button><button class="btn primary" type="button" id="sc-add">Add change</button></div>
+        </div>
+        <div class="sc-ok" id="sc-ok" role="status" hidden>Scheduled change added.</div>
+
+        <div class="tablewrap">
+          <table class="data dt" id="sc-table" aria-labelledby="section-title"><thead><tr><th>Start date</th><th>End date</th><th>Provider</th><th>Notice provided</th><th>Notice date &amp; time</th><th>Reason</th></tr></thead><tbody id="sc-body"></tbody></table>
+          <div class="empty" id="sc-empty"><b>No scheduled changes.</b>Requests from the participant to move or cancel a shift will appear here.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- EXPIRED -->
+    <section class="tab-panel" id="tab-expired" role="tabpanel" hidden>
+      <div class="dt-block">
+        <div class="tablewrap">
+          <table class="data dt" id="expired-table" aria-labelledby="section-title">
+            <thead><tr><th>Plan start date</th><th>Plan end date</th><th>PACE plan</th><th>PACE engagement start date</th><th>PACE start date</th><th>PACE review/end date</th><th><span class="sr">View</span></th></tr></thead>
+            <tbody>
+              <tr><td>15 Oct 2023</td><td>14 Oct 2025</td><td>Yes</td><td>1 May 2022</td><td>15 Oct 2023</td><td>14 Oct 2025</td><td class="rowact"><a class="viewlink" href="#" title="Opens the participant's engagement"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-eye"/></svg>View</a></td></tr>
+              <tr><td>15 Oct 2022</td><td>14 Oct 2023</td><td>Yes</td><td>1 May 2022</td><td>15 Oct 2022</td><td>14 Oct 2023</td><td class="rowact"><a class="viewlink" href="#" title="Opens the participant's engagement"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-eye"/></svg>View</a></td></tr>
+              <tr><td>15 Oct 2021</td><td>14 Oct 2022</td><td>No</td><td><span class="mutedtext">N/A</span></td><td><span class="mutedtext">N/A</span></td><td><span class="mutedtext">N/A</span></td><td class="rowact"><a class="viewlink" href="#" title="Opens the participant's engagement"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-eye"/></svg>View</a></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+    <section class="tab-panel" id="tab-sos" role="tabpanel" hidden>
+      <div id="sos-list"></div>
+    </section>
+    <section class="tab-panel" id="tab-history" role="tabpanel" hidden>
+      <div class="filterbar" role="search" aria-label="Filter activity history">
+        <label>Start date <input class="input" type="date" id="hs-start"></label>
+        <label>End date <input class="input" type="date" id="hs-end" aria-describedby="err-hs-end"></label>
+        <label>Staff member <input class="input" type="text" id="hs-staff"></label>
+        <label>Keywords <input class="input" type="text" id="hs-kw"></label>
+        <button class="btn" type="button" id="hs-clear">Clear filters</button>
+        <div class="err hs-err" id="err-hs-end" hidden>End date must be on or after the start date</div>
+      </div>
+      <div class="dt-block">
+        <div class="dt-tools">
+          <div style="display:flex;gap:22px;align-items:center">
+            <button class="linkact" type="button" id="hs-add-open"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg>Add history note</button>
+          </div>
+        </div>
+
+        <div class="sc-form" id="hs-add" role="group" aria-labelledby="hs-add-title" hidden>
+          <div class="sc-form-head"><h3 id="hs-add-title">Add history note</h3><span class="mutedtext"><span class="req">*</span> Required</span></div>
+          <div class="fgrid">
+            <div class="field"><label for="hs-activity">Activity</label><select class="select" id="hs-activity"></select></div>
+            <div class="field span2"><label for="hs-note">Note <span class="req">*</span></label><textarea class="input" id="hs-note" rows="3"></textarea><div class="err" id="err-hs-note" hidden></div></div>
+          </div>
+          <div class="sc-actions"><button class="btn" type="button" id="hs-add-cancel">Cancel</button><button class="btn primary" type="button" id="hs-add-save">Add note</button></div>
+        </div>
+
+        <div class="sc-ok" id="hs-ok" role="status" hidden>History note added.</div>
+        <div class="tablewrap">
+          <table class="data dt" aria-labelledby="section-title"><thead><tr><th>Activity</th><th>By</th><th>Description</th><th class="num">Activity date</th></tr></thead><tbody id="hs-body"></tbody></table>
+          <div class="empty" id="hs-empty" hidden><b>No activity matches these filters.</b>Clear a filter or widen the date range.</div>
+        </div>
+        <div class="inv-foot"><span id="hs-summary" role="status"></span></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="drawer" id="notes-drawer" role="dialog" aria-modal="true" aria-labelledby="nd-title">
+  <button class="btn sm close" type="button" id="nd-close">Close</button>
+  <h2 id="nd-title">Notes</h2>
+  <div class="sub">Budget conditions and provider notes for this support category.</div>
+  <ul class="nd-list" id="nd-list"></ul>
+  <div class="nd-empty" id="nd-empty" hidden>No notes yet for this support category.</div>
+  <div class="nd-add">
+    <label for="nd-text">Add a note</label>
+    <textarea class="input" id="nd-text" rows="3" aria-describedby="nd-err"></textarea>
+    <div class="err" id="nd-err" hidden>Enter a note before saving.</div>
+    <button class="btn primary" type="button" id="nd-save">Add note</button>
+    <div class="sc-ok nd-ok" id="nd-ok" role="status" hidden>Note added.</div>
+  </div>
+</div>
+<div class="drawer prov-drawer" id="prov-drawer" role="dialog" aria-modal="true" aria-labelledby="pd-title">
+  <button class="btn sm close" type="button" id="pd-close">Close</button>
+  <h2 id="pd-title">Invoices</h2>
+  <div class="sub" id="pd-sub"></div>
+  <div class="pd-summary"><span id="pd-count" class="pd-count" role="status"></span><button class="linkbtn" type="button" id="pd-all">View all invoices for this provider</button></div>
+  <div class="tablewrap">
+    <table class="data dt" id="pd-table" aria-labelledby="pd-title">
+      <colgroup><col style="width:16%"><col style="width:16%"><col style="width:21%"><col style="width:13%"><col style="width:22%"><col style="width:12%"></colgroup>
+      <thead><tr><th data-tip="The provider's invoice number.">Invoice</th><th data-tip="The date the provider issued the invoice.">Invoice date</th><th data-tip="The dates of the supports billed on this invoice.">Period</th><th class="num" data-tip="The invoice total, including GST where it applies.">Amount</th><th data-tip="Where the invoice is in the approval process, e.g. awaiting approval, on hold, approved or rejected.">Status</th><th><span class="sr">Actions</span></th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <div class="empty" id="pd-empty" hidden><b id="pd-empty-msg">No invoices yet for this provider.</b></div>
+  </div>
+</div>
+<div class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title">
+  <button class="btn sm close" type="button" id="drawer-close">Close</button>
+  <h2 id="drawer-title">Release schedule</h2>
+  <div class="sub">From the NDIS. Plan 15 Oct 2025 to 14 Oct 2027, total $88,722.90.</div>
+  <div class="rel">
+    <div class="rh"><span>15 Oct 2025<small>Released</small></span><span>$44,361.45</span></div>
+    <table>
+      <tr><td>Improved daily living skills</td><td>$26,767.91</td></tr>
+      <tr><td>Choice and control</td><td>$2,793.54</td></tr>
+      <tr><td>Assistance with daily life</td><td>$6,000.00</td></tr>
+      <tr><td>Assistance with social and community participation</td><td>$4,000.00</td></tr>
+      <tr><td>Consumables</td><td>$1,200.00</td></tr>
+      <tr><td>Home and living (stated)</td><td>$3,600.00</td></tr>
+    </table>
+  </div>
+  <div class="rel">
+    <div class="rh"><span>15 Oct 2026<small>Scheduled, in 23 days</small></span><span>$44,361.45</span></div>
+    <table>
+      <tr><td>Improved daily living skills</td><td>$26,767.91</td></tr>
+      <tr><td>Choice and control</td><td>$2,793.54</td></tr>
+      <tr><td>Assistance with daily life</td><td>$6,000.00</td></tr>
+      <tr><td>Assistance with social and community participation</td><td>$4,000.00</td></tr>
+      <tr><td>Consumables</td><td>$1,200.00</td></tr>
+      <tr><td>Home and living (stated)</td><td>$3,600.00</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="scrim modal-scrim" id="modal-scrim"></div>
+<div class="cat-modal" id="cat-modal" role="dialog" aria-modal="true" aria-labelledby="cat-modal-title">
+  <button class="x" type="button" id="cat-modal-x" aria-label="Close">&times;</button>
+  <h2 id="cat-modal-title">Funding period schedule</h2>
+  <p class="roll">Any unspent funding will roll-over to the next funding period.</p>
+  <div id="cat-modal-count"></div>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Funding period</th><th>Length</th><th class="num">Amount</th><th>Release status</th></tr></thead>
+      <tbody id="cat-modal-tbody"></tbody>
+    </table>
+  </div>
+  <button class="btn" type="button" id="cat-modal-close">Close</button>
+</div>
+
+<div class="cat-modal util-modal" id="util-modal" role="dialog" aria-modal="true" aria-labelledby="util-modal-title">
+  <button class="x" type="button" id="util-modal-x" aria-label="Close">&times;</button>
+  <h2 id="util-modal-title">How utilisation is calculated</h2>
+  <p>Utilisation is calculated the same way for the plan overall and for each support category, using that category's own Released, Spent and Pending.</p>
+  <dl class="um-list">
+    <dt>Committed</dt><dd>Spent to date + Pending</dd>
+    <dt>Expected</dt><dd>Released &times; (time elapsed &divide; period length)</dd>
+    <dt>Gap</dt><dd>Committed &minus; Expected</dd>
+  </dl>
+  <dl class="um-list">
+    <dt><span class="tag under">Under-utilised</span></dt><dd>Spending less than the plan's pace suggests</dd>
+    <dt><span class="tag over">Over-utilised</span></dt><dd>Spending more than the plan's pace suggests</dd>
+    <dt><span class="tag ok">On track</span></dt><dd>Within 10% of the released amount either way</dd>
+  </dl>
+  <p class="um-note"><b>Period end</b> is the next scheduled release date when known, otherwise the plan end date (shown as approximate).</p>
+  <button class="btn" type="button" id="util-modal-close">Close</button>
+</div>
+
+<script>
+(function(){
+  document.documentElement.lang='en-AU';
+  const $ = (s, r=document) => r.querySelector(s);
+  const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+  const money = n => (n<0?'-':'') + '$' + Math.abs(n).toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const pct = f => Math.round(f*100) + '%';
+  const DAY = 86400000;
+  const dl = '<svg class="i" aria-hidden="true" focusable="false"><use href="#i-download"/></svg>';
+
+  const PLAN = {start:new Date('2025-10-15'), end:new Date('2027-10-14'), nextRelease:new Date('2026-10-15'), today:new Date('2026-09-22'), totalValue:93722.90};
+  let variant = 'pace-int', integrated = true;
+
+  const CATS = [
+    {id:'idl', set:'cb', purpose:'Capacity building', name:'Improved daily living skills', period:'15 Oct 2025 to 14 Oct 2027', released:26767.91, spent:12296.00, pending:2000.00},   /* incl. new Embracing Play invoices: +$1,655.50 approved, +$715.00 awaiting approval */
+    {id:'cc',  set:'cb', purpose:'Capacity building', name:'Choice and control', period:'29 Nov 2025 to 14 Oct 2027', released:2793.54, spent:2193.45, pending:0},
+    {id:'sc',  set:'cb', purpose:'Capacity building', name:'Support coordination', period:'15 Oct 2025 to 14 Oct 2027', released:2500, spent:2300, pending:400},
+    {id:'adl', set:'core-flex', purpose:'Core', name:'Assistance with daily life', period:'15 Oct 2025 to 14 Oct 2027', released:6000, spent:5210.20, pending:640},
+    {id:'scp', set:'core-flex', purpose:'Core', name:'Assistance with social and community participation', period:'15 Oct 2025 to 14 Oct 2027', released:4000, spent:2640.00, pending:0},
+    {id:'con', set:'core-flex', purpose:'Core', name:'Consumables', period:'15 Oct 2025 to 14 Oct 2027', released:1200, spent:0, pending:0},
+    {id:'hl',  set:'core-stated', purpose:'Core', name:'Home and living (stated)', period:'15 Oct 2025 to 14 Oct 2027', released:3600, spent:1200, pending:0}
+  ];
+  const catById = id => CATS.find(c=>c.id===id);
+  /* notes on budget conditions and providers, per support category (sample data) */
+  const NOTES={
+    idl:[{dt:'2026-09-03T14:20',by:'Priya Nair',text:'Alliance Rehabilitation to provide a quote before any therapy block over $1,500.'},{dt:'2026-07-18T09:05',by:'Priya Nair',text:'Embracing Play confirmed fortnightly sessions until December. No allocation set yet.'}],
+    sc:[{dt:'2026-09-15T11:40',by:'Priya Nair',text:'Support coordination is close to exhausted. Raise with the participant at next check-in and consider a plan review request.'}],
+    adl:[{dt:'2026-08-02T16:10',by:'Priya Nair',text:'Participant prefers Bright Support Services. Do not allocate to other providers without the participant\'s approval.'}]
+  };
+  const PROVIDERS = [
+    {name:'Alliance Rehabilitation', cat:'idl', mgmt:'Plan managed', assigned:12000, spent:6433.98, pending:785.00},
+    {name:'Embracing Play', cat:'idl', mgmt:'Plan managed', assigned:null, spent:5086.06, pending:1215.00},   /* incl. EMP-0832/0861/0874/0890 approved and EMP-0947/0949/0951 awaiting; EMP-0845 rejected, excluded */
+    {name:'Therapy Connect', cat:'idl', mgmt:'Plan managed', assigned:null, spent:775.96, pending:0},
+    {name:'Sky Plan Management', cat:'cc', mgmt:'Plan managed', assigned:null, spent:2193.45, pending:0},
+    {name:'Bright Support Services', cat:'adl', mgmt:'Plan managed', assigned:6000, spent:5210.20, pending:640},
+    {name:'Coastal Community Care', cat:'scp', mgmt:'Plan managed', assigned:null, spent:2640.00, pending:0},
+    {name:'HomeFit Modifications', cat:'hl', mgmt:'Plan managed', assigned:3600, spent:1200, pending:0}
+  ];
+  const INVOICES = [
+    {no:'BSS-4471', prov:'Bright Support Services', cat:'adl', date:'2026-09-19', period:'1 Sep 2026 to 15 Sep 2026', start:'2026-09-01', end:'2026-09-15', amount:640.00, status:'Awaiting plan manager approval'},
+    {no:'EMP-0944', prov:'Embracing Play', cat:'idl', date:'2026-09-20', period:'7 Sep 2026 to 20 Sep 2026', start:'2026-09-07', end:'2026-09-20', amount:450.00, status:'On hold by client'},
+    {no:'CCC-214', prov:'Coastal Community Care', cat:'scp', date:'2026-09-14', period:'1 Sep 2026 to 13 Sep 2026', start:'2026-09-01', end:'2026-09-13', amount:520.00, status:'On hold by plan manager'},
+    {no:'TC-131', prov:'Therapy Connect', cat:'idl', date:'2026-09-10', period:'1 Sep 2026 to 9 Sep 2026', start:'2026-09-01', end:'2026-09-09', amount:310.00, status:'Rejected'},
+    {no:'EMP-0931', prov:'Embracing Play', cat:'idl', date:'2026-09-18', period:'4 Sep 2026 to 18 Sep 2026', start:'2026-09-04', end:'2026-09-18', amount:500.00, status:'Approved'},
+    {no:'ALR-2214', prov:'Alliance Rehabilitation', cat:'idl', date:'2026-09-16', period:'1 Sep 2026 to 14 Sep 2026', start:'2026-09-01', end:'2026-09-14', amount:785.00, status:'Awaiting client approval'},
+    {no:'BSS-4402', prov:'Bright Support Services', cat:'adl', date:'2026-09-05', period:'16 Aug 2026 to 31 Aug 2026', start:'2026-08-16', end:'2026-08-31', amount:1302.55, status:'Approved'},
+    {no:'ALR-2187', prov:'Alliance Rehabilitation', cat:'idl', date:'2026-09-02', period:'18 Aug 2026 to 31 Aug 2026', start:'2026-08-18', end:'2026-08-31', amount:640.00, status:'Approved'},
+    {no:'CCC-207', prov:'Coastal Community Care', cat:'scp', date:'2026-08-28', period:'1 Aug 2026 to 28 Aug 2026', start:'2026-08-01', end:'2026-08-28', amount:660.00, status:'Approved'},
+    {no:'EMP-0902', prov:'Embracing Play', cat:'idl', date:'2026-08-21', period:'7 Aug 2026 to 21 Aug 2026', start:'2026-08-07', end:'2026-08-21', amount:420.00, status:'Approved'},
+    /* extra Embracing Play invoices so the provider panel shows its 10-invoice limit (11 in total) */
+    {no:'EMP-0951', prov:'Embracing Play', cat:'idl', date:'2026-09-22', period:'14 Sep 2026 to 21 Sep 2026', start:'2026-09-14', end:'2026-09-21', amount:225.00, status:'Awaiting client and plan manager approval'},
+    {no:'EMP-0949', prov:'Embracing Play', cat:'idl', date:'2026-09-21', period:'8 Sep 2026 to 19 Sep 2026', start:'2026-09-08', end:'2026-09-19', amount:310.00, status:'Awaiting client approval'},
+    {no:'EMP-0947', prov:'Embracing Play', cat:'idl', date:'2026-09-21', period:'1 Sep 2026 to 12 Sep 2026', start:'2026-09-01', end:'2026-09-12', amount:180.00, status:'Awaiting plan manager approval'},
+    {no:'EMP-0890', prov:'Embracing Play', cat:'idl', date:'2026-08-07', period:'24 Jul 2026 to 6 Aug 2026', start:'2026-07-24', end:'2026-08-06', amount:420.00, status:'Approved'},
+    {no:'EMP-0874', prov:'Embracing Play', cat:'idl', date:'2026-07-24', period:'10 Jul 2026 to 23 Jul 2026', start:'2026-07-10', end:'2026-07-23', amount:420.00, status:'Approved'},
+    {no:'EMP-0861', prov:'Embracing Play', cat:'idl', date:'2026-07-10', period:'26 Jun 2026 to 9 Jul 2026', start:'2026-06-26', end:'2026-07-09', amount:395.50, status:'Approved'},
+    {no:'EMP-0845', prov:'Embracing Play', cat:'idl', date:'2026-06-26', period:'12 Jun 2026 to 25 Jun 2026', start:'2026-06-12', end:'2026-06-25', amount:420.00, status:'Rejected'},
+    {no:'EMP-0832', prov:'Embracing Play', cat:'idl', date:'2026-06-12', period:'29 May 2026 to 11 Jun 2026', start:'2026-05-29', end:'2026-06-11', amount:420.00, status:'Approved'},
+    {no:'SKY322515', prov:'Sky Plan Management', cat:'cc', date:'2026-08-14', period:'14 Aug 2026 to 14 Aug 2026', start:'2026-08-14', end:'2026-08-14', amount:104.45, status:'Approved'},
+    {no:'SKY319886', prov:'Sky Plan Management', cat:'cc', date:'2026-07-14', period:'14 Jul 2026 to 14 Jul 2026', start:'2026-07-14', end:'2026-07-14', amount:104.45, status:'Approved'},
+    {no:'TC-118', prov:'Therapy Connect', cat:'idl', date:'2026-07-03', period:'15 Jun 2026 to 30 Jun 2026', start:'2026-06-15', end:'2026-06-30', amount:775.96, status:'Approved'},
+    {no:'HFM-33', prov:'HomeFit Modifications', cat:'hl', date:'2026-06-12', period:'12 Jun 2026 to 12 Jun 2026', start:'2026-06-12', end:'2026-06-12', amount:1200.00, status:'Approved'},
+    {no:'SKY315385', prov:'Sky Plan Management', cat:'cc', date:'2026-05-14', period:'14 May 2026 to 14 May 2026', start:'2026-05-14', end:'2026-05-14', amount:104.45, status:'Approved'}
+  ];
+  const fmtDate = d => { if(typeof d==='string' && /^\d{4}-\d\d-\d\d$/.test(d)){ const [y,m,dd]=d.split('-').map(Number); d=new Date(y,m-1,dd); } return new Date(d).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'}); };
+  /* Period: one date when the service was a single day; otherwise 'start to end' (year shown once, or on both dates if they differ) */
+  const isoDate = d => { const [y,m,dd]=d.split('-').map(Number); return new Date(y,m-1,dd); };
+  const fmtDM = d => isoDate(d).toLocaleDateString('en-AU',{day:'numeric',month:'short'});
+  const fmtPeriod = (s,e) => s===e ? fmtDate(s) : (s.slice(0,4)===e.slice(0,4) ? `${fmtDM(s)} to ${fmtDM(e)}` : `${fmtDate(s)} to ${fmtDate(e)}`);
+  /* Approved: date the invoice was sent to the NDIS (sample data: 3 days after the invoice date, approved invoices only) */
+  const approvedOn = i => { if(i.status!=='Approved') return ''; const d=isoDate(i.date); d.setDate(d.getDate()+3); return d; };
+  const sum = (arr,k) => arr.reduce((a,c)=>a+c[k],0);
+
+  /* utilisation */
+  function period(){
+    const known = integrated && PLAN.nextRelease && PLAN.nextRelease > PLAN.today;
+    const end = known ? PLAN.nextRelease : PLAN.end;
+    const elapsed = Math.round((PLAN.today - PLAN.start)/DAY);
+    const total = Math.round((end - PLAN.start)/DAY);
+    return {end, elapsed, total, frac:Math.min(1,Math.max(0,elapsed/total)), approx:!known};
+  }
+  function util(released, spent, pending){
+    if(released<=0) return null;
+    const p = period(), committed = spent+pending, spendFrac = committed/released;
+    const variance = Math.round((spendFrac - p.frac)*100);
+    let status='ok';
+    if(committed>released || variance>10) status='over'; else if(variance<-10) status='under';
+    const expected = released*p.frac, gap = committed-expected;
+    return {spendFrac, spentOnlyFrac:spent/released, timeFrac:p.frac, variance, status, committed, available:released-committed, expected, gap};
+  }
+  const label = u => u.status==='ok' ? 'On track' : u.status==='under' ? 'Under-utilised' : 'Over-utilised';
+  function gapPhrase(u){
+    const abs = money(Math.abs(u.gap)).replace(/\.\d\d$/,'');
+    if(u.status==='ok') return 'Spending is tracking close to plan';
+    return u.gap<0 ? `${abs} less spent than expected by now` : `${abs} more spent than expected by now`;
+  }
+
+  function renderHeader(){
+    const rel = sum(CATS,'released'), sp = sum(CATS,'spent'), pe = sum(CATS,'pending');
+    const u = util(rel, sp, pe), p = period();
+    const total = PLAN.totalValue;
+    const tile=(lbl,val,sub)=>`<div class="fig"><div class="lbl">${lbl}</div><div class="val">${money(val)}</div><div class="sub">${sub}</div></div>`;
+    let tiles;
+    if(variant==='pace-int') tiles=[tile('Total plan budget',total,'Total funding for this plan'), tile('Released to date',rel,pct(rel/total)+' of plan budget'), tile('Spent to date',sp,pct(sp/rel)+' of released'), tile('Yet to be released',total-rel,'Total plan budget minus released to date')];
+    else if(variant==='pace-manual') tiles=[tile('Released to date',rel,'Entered manually as funds are released'), tile('Spent to date',sp,pct(sp/rel)+' of released'), tile('Available to use now',rel-sp,'Released to date minus spent to date')];
+    else tiles=[tile('Total plan value',rel,'From NDIS plan'), tile('Spent to date',sp,pct(sp/rel)+' of total plan value'), tile('Available to use now',rel-sp,'Total plan value minus spent to date')];
+    /* whole-plan utilisation tile: committed (spent + pending) as a share of released, with status */
+    tiles.push(`<div class="fig fig-util"><div class="lbl">Utilisation</div><div class="val">${pct(u.spendFrac)} <span class="tag ${u.status}">${label(u)}</span></div><div class="sub">${money(u.committed)} committed of ${money(rel)} released</div></div>`);
+    const f=$('#figures'); f.innerHTML=tiles.join(''); f.className='figures '+({5:'',4:'figures-4',3:'figures-3'})[tiles.length];
+    /* same summary figures, repeated on Plan budget */
+    const nonPace = variant==='non-pace';
+    $('#plan-type').textContent = nonPace?'Non-PACE plan':'PACE plan';
+    $('#badge-int').textContent = 'NDIS Integration connected';
+    $('#badge-int').hidden = !integrated; $('#pipe-int').hidden = !integrated;
+    /* time-left banner: current funding period when release dates are known, otherwise the whole plan */
+    { const pp=period(), left=Math.max(0,Math.round((pp.end-PLAN.today)/DAY)), el=Math.round(pp.frac*100), scope=pp.approx?'plan':'plan period';
+      $('#period-banner').innerHTML=`<div class="pb-top"><svg class="i pb-ico" aria-hidden="true" focusable="false"><use href="#i-calendar-days"/></svg>
+        <b>${left} day${left===1?'':'s'} left in this plan</b><b>${el}% of ${scope} elapsed</b>
+        ${integrated?'<button class="linkact pb-link" type="button" data-open-drawer><svg class="i" aria-hidden="true" focusable="false"><use href="#i-calendar-days"/></svg>Release schedule</button>':''}</div>
+        <div class="pb-track" role="progressbar" aria-label="${scope[0].toUpperCase()+scope.slice(1)} elapsed" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${el}" aria-valuetext="${el}% elapsed, ${left} days left"><div class="pb-fill" style="width:${el}%"></div></div>`; }
+  }
+
+  /* utilisation, per support category, same formula as the header chip */
+  function utilRow(name, sub, u){
+    if(!u) return `<div class="name">${name}<small>${sub}</small></div><div class="track"></div><div class="pct mutedtext">n/a</div><div class="mutedtext ustatus">No funds released</div>`;
+    return `<div class="name">${name}<small>${sub}</small></div>
+      <div class="track"><div class="fill pending" style="width:${pct(Math.min(1,u.spendFrac))}"></div><div class="fill spent" style="width:${pct(Math.min(1,u.spentOnlyFrac))}"></div><div class="marker" style="left:${pct(Math.min(1,u.timeFrac))}"></div></div>
+      <div class="pct">${pct(u.spendFrac)}</div>
+      <div class="ustatus"><span class="tag ${u.status}">${label(u)}</span><small class="gap-note">${gapPhrase(u)}</small></div>`;
+  }
+  function renderUtilisation(){
+    const rel=sum(CATS,'released'), sp=sum(CATS,'spent'), pe=sum(CATS,'pending');
+    const u=util(rel,sp,pe), p=period();
+
+    $('#util-scope-label').textContent = p.approx?'Approximate, measured against the whole plan':'Current funding period';
+    const daysLeft = Math.round((p.end-PLAN.today)/DAY);
+    $('#util-period').textContent = p.approx
+      ? `Release dates are not available for this participant, so time is measured across the whole plan, 15 Oct 2025 to 14 Oct 2027. ${daysLeft} days left in the plan.`
+      : `Funding released 15 Oct 2025 covers the period to ${fmtDate(new Date(p.end-DAY))}. ${daysLeft} days left in this period.`;
+
+    const rows = [];
+    rows.push(`<div class="row-legend"><span style="--c:var(--time)">Time elapsed</span><span style="--c:var(--spent)">Spent</span><span style="--c:var(--pending)">Pending</span><span>Marker shows time elapsed</span></div>`);
+    rows.push(`<div class="name">Whole plan<small>${p.approx?'in whole plan':'in funding period'}</small></div><div class="track"><div class="fill time" style="width:${pct(u.timeFrac)}"></div></div><div class="pct">${pct(u.timeFrac)}</div><div class="mutedtext ustatus">Time reference</div>`);
+
+    const coreFlex = CATS.filter(c=>c.set==='core-flex');
+    if(coreFlex.length){ const r=sum(coreFlex,'released'), s=sum(coreFlex,'spent'), pd=sum(coreFlex,'pending'); rows.push(utilRow('Core, flexible', coreFlex.length+' categories, shared budget', util(r,s,pd))); }
+    const coreStated = CATS.filter(c=>c.set==='core-stated');
+    if(coreStated.length){ const r=sum(coreStated,'released'), s=sum(coreStated,'spent'), pd=sum(coreStated,'pending'); rows.push(utilRow('Core, stated', coreStated.map(c=>c.name).join(', '), util(r,s,pd))); }
+    CATS.filter(c=>c.set==='cb').forEach(c=>rows.push(utilRow(c.name, 'Capacity building', util(c.released,c.spent,c.pending))));
+
+    $('#util-bars').innerHTML = rows.join('');
+
+    const v=$('#verdict'); v.className='verdict '+u.status;
+    const worst = CATS.map(c=>({c,u:util(c.released,c.spent,c.pending)})).filter(x=>x.u).sort((a,b)=>a.u.variance-b.u.variance)[0];
+    const mostOver = CATS.map(c=>({c,u:util(c.released,c.spent,c.pending)})).filter(x=>x.u).sort((a,b)=>b.u.variance-a.u.variance)[0];
+    let text;
+    if(u.status==='under'){ const unspent=Math.max(0,rel-u.committed); text=`<b>${label(u)} overall.</b> By this point in the ${p.approx?'plan':'funding period'}, about ${money(u.expected).replace(/\.\d\d$/,'')} would typically be committed. This plan has committed ${money(u.committed).replace(/\.\d\d$/,'')}, so it's ${gapPhrase(u).toLowerCase()}. At the current rate, about ${money(unspent).replace(/\.\d\d$/,'')} of released funding will be unspent ${p.approx?'at plan review on 14 Oct 2027':'when the next release lands on 15 Oct 2026'}. ${worst.c.name} accounts for most of the gap.`; }
+    else if(u.status==='over'){ text=`<b>${label(u)} overall.</b> By this point in the ${p.approx?'plan':'funding period'}, about ${money(u.expected).replace(/\.\d\d$/,'')} would typically be committed. This plan has committed ${money(u.committed).replace(/\.\d\d$/,'')}, so it's ${gapPhrase(u).toLowerCase()}. Released funds are likely to run out before ${p.approx?'plan review':'the next release'} if this continues. ${mostOver.c.name} is the biggest contributor.`; }
+    else { text=`<b>On track overall.</b> ${money(u.committed).replace(/\.\d\d$/,'')} committed is close to the ${money(u.expected).replace(/\.\d\d$/,'')} expected by this point in the ${p.approx?'plan':'funding period'}.`+(p.approx?' This is an approximation: without release dates the plan is treated as one funding period.':''); }
+    $('#verdict-text').innerHTML=text;
+
+    $('#how-text').textContent =
+`Committed        = Spent to date + Pending
+Expected by now  = Released x (time elapsed / period length)
+Gap              = Committed - Expected by now
+
+Gap negative  -> Under-utilised, spending less than the plan's pace suggests
+Gap positive  -> Over-utilised, spending more than the plan's pace suggests
+On track      -> Gap is within 10% of the released amount either way
+
+Period end = next scheduled release date when known,
+otherwise plan end date (shown as approximate)
+
+Calculated the same way for the plan overall and for each support category,
+using that category's own Released, Spent and Pending.
+
+Today ${fmtDate(PLAN.today)}: committed ${money(u.committed)}, expected ${money(u.expected)}
+by this point. Gap: ${money(u.gap)} (${label(u).toLowerCase()}).`;
+  }
+
+  /* summary graphs: every graph is visible, grouped by support purpose; each graph has its own bar/pie toggle */
+  let defaultView = 'bar'; const views = {}; const selCat = {};
+  const viewOf = k => views[k] || defaultView;
+  function chartName(c){ if(c.id!=='hl') return c.name; return variant==='non-pace' ? 'Home and living' : 'Home and living (Core stated support)'; }
+  function chartNames(){
+    return {total: variant==='non-pace' ? 'Total plan value' : 'Released to date', spent:'Spent to date', avail:'Available to use now'};
+  }
+  function pieSvg(slices, size){
+    const data=slices.filter(x=>x.v>0), tot=data.reduce((a,x)=>a+x.v,0);
+    if(tot<=0) return '<div class="mutedtext">No funds released yet</div>';
+    const label=data.map(x=>`${x.n} ${money(x.v)}`).join(', ');
+    const open=`<svg viewBox="0 0 200 200" width="${size}" height="${size}" role="img" aria-label="${label}">`;
+    if(data.length===1) return `${open}<circle cx="100" cy="100" r="80" fill="${data[0].c}"/></svg>`;
+    let a=Math.PI, out='';
+    data.forEach(x=>{
+      const sweep=x.v/tot*2*Math.PI, a1=a+sweep;
+      const x0=100+80*Math.cos(a), y0=100+80*Math.sin(a), x1=100+80*Math.cos(a1), y1=100+80*Math.sin(a1);
+      out+=`<path d="M100 100 L${x0.toFixed(2)} ${y0.toFixed(2)} A80 80 0 ${sweep>Math.PI?1:0} 1 ${x1.toFixed(2)} ${y1.toFixed(2)} Z" fill="${x.c}" stroke="var(--panel)" stroke-width="2" stroke-linejoin="round"/>`;
+      a=a1;
+    });
+    return `${open}${out}</svg>`;
+  }
+  const gRow=(name,col,v,cls)=>`<div class="cd-row ${cls||''}">${col?`<span class="sw" style="background:${col}"></span>`:''}<span class="nm">${name}</span><span>${money(v)}</span></div>`;
+  const toggleHtml=(key,view)=>`<div class="viewtoggle compact" role="group" aria-label="Chart type" data-card="${key}"><button type="button" data-view="bar" aria-pressed="${view==='bar'}" aria-label="Bar graph" title="Bar graph"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-chart-column"/></svg></button><button type="button" data-view="pie" aria-pressed="${view==='pie'}" aria-label="Pie chart" title="Pie chart"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-chart-pie"/></svg></button></div>`;
+  const barsHtml=(bars,H)=>{ const max=Math.max(1,...bars.map(b=>b.v)); return `<div class="mbars">${bars.map(b=>`<div class="mb" style="height:${b.v>0?Math.max(2,b.v/max*H):0}px;background:${b.c}" title="${b.n} ${money(b.v)}"></div>`).join('')}</div>`; };
+  function cardShell(o){
+    const view=viewOf(o.key);
+    const visual = view==='bar' ? barsHtml(o.bars,110) : pieSvg(o.slices,120);
+    return `<article class="gcard${o.big?' big':''}${o.overview?' overview':''}"><header><h4>${o.title}</h4>${o.tag?`<span class="gtag ${o.tagCls}">${o.tag}</span>`:''}${toggleHtml(o.key,view)}</header><div class="gsub">${o.sub1}</div>${o.sub2?`<div class="gsub">${o.sub2}</div>`:''}
+      <div class="gbody"><div class="gvis">${visual}</div><div class="glist">${o.rows}</div></div></article>`;
+  }
+  function gcard(o){
+    const n=chartNames(), released=sum(o.list,'released'), spent=sum(o.list,'spent'), avail=Math.max(0,released-spent);
+    return cardShell({key:o.key, title:o.title, tag:o.tag, tagCls:o.tagCls, big:o.big, sub1:'Plan managed', sub2:o.period,
+      bars:[{v:released,c:'var(--released)',n:n.total},{v:spent,c:'var(--spent)',n:n.spent},{v:avail,c:'var(--avail)',n:n.avail}],
+      slices:[{v:spent,c:'var(--spent)',n:n.spent},{v:avail,c:'var(--avail)',n:n.avail}],
+      rows:gRow(n.spent,'var(--spent)',spent)+gRow(n.avail,'var(--avail)',avail,'sep')+gRow(n.total,'',released,'total')});
+  }
+  function overviewCard(){
+    const n=chartNames(), rel=sum(CATS,'released'), sp=sum(CATS,'spent'), av=Math.max(0,rel-sp);
+    const spentBar={v:sp,c:'var(--spent)',n:n.spent}, availBar={v:av,c:'var(--avail)',n:n.avail};
+    let bars, slices, rows;
+    if(variant==='pace-int'){
+      const total=PLAN.totalValue, yet=Math.max(0,total-rel);
+      bars=[{v:total,c:'var(--budget)',n:'Total plan budget'},{v:rel,c:'var(--released)',n:'Released to date'},spentBar,availBar];
+      slices=[spentBar,availBar,{v:yet,c:'var(--yet)',n:'Yet to be released'}];
+      rows=gRow('Spent to date','var(--spent)',sp)+gRow('Available to use now','var(--avail)',av)+gRow('Released to date','',rel,'sub')+gRow('Yet to be released','var(--yet)',yet,'sep')+gRow('Total plan budget','',total,'total');
+    } else {
+      bars=[{v:rel,c:'var(--released)',n:n.total},spentBar,availBar];
+      slices=[spentBar,availBar];
+      rows=gRow(n.spent,'var(--spent)',sp)+gRow(n.avail,'var(--avail)',av,'sep')+gRow(n.total,'',rel,'total');
+    }
+    return cardShell({key:'overview', title:'Total plan', overview:true, sub1:'Overall plan spending vs budget', sub2:'', bars, slices, rows});
+  }
+  function renderChart(){
+    const n=chartNames();
+    const items=[[n.total,'--released'],[n.spent,'--spent'],[n.avail,'--avail']];
+    if(variant==='pace-int') items.unshift(['Total plan budget','--budget']);
+    $('#chart-legend').innerHTML = items.map(([t,v])=>`<span style="--c:var(${v})">${t}</span>`).join('');
+    $('#g-eq').textContent = `${n.total} = ${n.spent} + ${n.avail}`;
+    const period=catById('adl').period;
+    const flex=CATS.filter(c=>c.set==='core-flex');
+    const catCard=c=>gcard({key:c.id, list:[c], title:chartName(c), period:c.period});
+    let html='<section class="gpurpose"><div class="gp-head"><h2>Whole plan</h2></div>'+overviewCard();
+    html+=`<div class="chart-disclaimer g-disclaimer" role="note"><svg class="i" aria-hidden="true"><use href="#i-triangle-alert"/></svg><div><b>Pending invoices and claims aren't included</b>Spent to date and available to use now don't include invoices or claims in pending status. Pending means they have been submitted to the NDIS but haven't been reconciled yet.</div></div></section>`;
+    const ORDER=['Core','Capacity building','Capital'];
+    const purposes=ORDER.filter(pn=>CATS.some(c=>c.purpose===pn));
+    const desc={'Core': variant==='non-pace' ? '' : "Core is split into flexible and stated supports. Your client can use flexible funds across any of the flexible categories, so you can see them all together in one graph or look at each category on its own.", 'Capacity building':"Each category has its own budget, and funds can't be moved between categories."};
+    const groupsFor=pn=>{
+      const opt=c=>({value:c.id, text:chartName(c)});
+      if(pn==='Core' && variant!=='non-pace'){
+        return [{label:'Flexible', items:[{value:'core-flex-all', text:'Core flexible supports (combined)'}].concat(flex.map(opt))},
+                {label:'Stated', items:CATS.filter(c=>c.set==='core-stated').map(opt)}].filter(g=>g.items.length);
+      }
+      return [{label:'', items:CATS.filter(c=>c.purpose===pn).map(opt)}];
+    };
+    purposes.forEach(pn=>{
+      const groups=groupsFor(pn), all=groups.flatMap(g=>g.items), slug=pn.toLowerCase().replace(/\s+/g,'-');
+      if(!all.some(i=>i.value===selCat[pn])) selCat[pn]=all[0].value;
+      const v=selCat[pn];
+      const card = v==='core-flex-all' ? gcard({key:'core-flex-all', list:flex, title:'Core flexible supports', period}) : catCard(catById(v));
+      const options=groups.map(g=>{ const o=g.items.map(i=>`<option value="${i.value}"${i.value===v?' selected':''}>${i.text}</option>`).join(''); return g.label?`<optgroup label="${g.label}">${o}</optgroup>`:o; }).join('');
+      html+=`<section class="gpurpose"><div class="gp-head"><h2>${pn}</h2><div class="gp-pick"><label for="sel-${slug}">Support category</label><select class="select" id="sel-${slug}" data-purpose="${pn}">${options}</select></div></div>${desc[pn]?`<p class="gp-desc">${desc[pn]}</p>`:''}${card}</section>`;
+    });
+    $('#graphs').innerHTML=html;
+  }
+  /* each graph has its own bar/pie toggle */
+  $('#graphs').addEventListener('click',e=>{
+    const b=e.target.closest('.viewtoggle[data-card] [data-view]'); if(!b) return;
+    const key=b.closest('.viewtoggle').dataset.card, v=b.dataset.view;
+    views[key]=v; renderChart();
+    const nb=document.querySelector(`#graphs .viewtoggle[data-card="${key}"] [data-view="${v}"]`); if(nb) nb.focus();
+  });
+  /* the support category dropdown switches the graph shown for that purpose */
+  $('#graphs').addEventListener('change',e=>{
+    const sel=e.target.closest('select[data-purpose]'); if(!sel) return;
+    const pn=sel.dataset.purpose; selCat[pn]=sel.value; renderChart();
+    const ns=document.querySelector(`#graphs select[data-purpose="${pn}"]`); if(ns) ns.focus();
+  });
+
+  /* tables */
+  function miniBar(u){
+    if(!u) return '<span class="mutedtext">No funds released</span>';
+    return `<div class="mini"><span class="v">${pct(u.spendFrac)}</span><span class="tag ${u.status}" title="${gapPhrase(u)}">${label(u)}</span></div>`;
+  }
+  function releasedCell(name, released, catId){
+    if(!integrated) return money(released);
+    const attr = catId ? `data-cat-id="${catId}"` : `data-name="${name.replace(/"/g,'&quot;')}" data-amount="${released}"`;
+    /* tooltip: next release amount and date, from the same schedule the side panel shows */
+    const nx=buildSchedule(released).find(p=>p.status==='Scheduled');
+    const tip=nx?`Next release ${money(nx.amount)} on ${fmtDate(nx.start)}. Click this link to view all upcoming releases for this category.`:'All funding for this category has been released. Click this link to view the release history.';
+    return `<button class="linkbtn reltip" type="button" data-cat-modal ${attr} data-tip="${tip}" aria-description="${tip}">${money(released)}</button>`;
+  }
+  /* Plan budget: one table per funding type, columns aligned across tables */
+  function renderBudget(){
+    const pp=period(), pEnd=pp.approx?PLAN.end:new Date(pp.end-DAY), pipe=' <span class="pipe" aria-hidden="true">|</span> ';
+    const row=c=>{const u=util(c.released,c.spent,c.pending);return `<tr><td class="cat" data-sort-value="${c.name.toLowerCase()}"><span class="cname">${c.name}</span><small>${c.period}</small></td><td>${c.mgmt||'Plan managed'}</td><td class="num">${releasedCell(c.name,c.released,c.id)}</td><td class="num">${money(c.spent)}</td><td class="num">${money(c.pending)}</td><td class="num">${money(c.released-c.spent-c.pending)}</td><td>${miniBar(u)}</td><td class="rowact">${catInvLink(c)}</td></tr>`;};
+    const table=(id,title,sub,list,foot)=>!list.length?'':`<div class="panel flat budget-panel">
+      <div class="head"><div class="infohead"><h2 id="${id}-title">${title}</h2><span class="infotip"><button type="button" class="infobtn" aria-expanded="false" aria-controls="${id}-info" aria-label="About ${title}"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-info"/></svg></button><span class="infopop" id="${id}-info" role="status" hidden>${sub}</span></span></div></div>
+      <div class="body tablewrap"><table class="data budget-table" aria-labelledby="${id}-title">
+        <colgroup><col class="c-cat"><col class="c-mgmt"><col class="c-num"><col class="c-num"><col class="c-num"><col class="c-num"><col class="c-util"><col class="c-act"></colgroup>
+        <thead><tr><th scope="col" data-tip="The NDIS support category this budget is funded under, with its funding dates.">Support category</th><th scope="col" data-tip="Who manages these funds: plan managed, self-managed or NDIA managed.">Management type</th><th scope="col" class="num" data-tip="Funding the NDIS has released for this category so far. Select an amount to see its release schedule.">Released</th><th scope="col" class="num" data-tip="Invoices and claims paid from this category to date.">Spent</th><th scope="col" class="num" data-tip="Invoices and claims submitted to the NDIS but not yet reconciled.">Pending</th><th scope="col" class="num" data-tip="Released minus spent minus pending. The amount that can still be committed now.">Available now</th><th scope="col" data-tip="Spent plus pending as a share of released, compared with how much of the funding period has passed.">Utilisation</th><th scope="col"><span class="sr">Invoices</span></th></tr></thead>
+        <tbody>${list.map(row).join('')}</tbody>${foot||''}
+      </table></div></div>`;
+    const cb=CATS.filter(c=>c.set==='cb'), flex=CATS.filter(c=>c.set==='core-flex'), stated=CATS.filter(c=>c.set==='core-stated');
+    const r=sum(flex,'released'),s=sum(flex,'spent'),p=sum(flex,'pending'),u=util(r,s,p);
+    const flexFoot=`<tfoot><tr class="total"><td>Core flexible total</td><td></td><td class="num">${releasedCell('Core, flexible',r)}</td><td class="num">${money(s)}</td><td class="num">${money(p)}</td><td class="num">${money(r-s-p)}</td><td>${miniBar(u)}</td><td></td></tr></tfoot>`;
+    $('#budget-tables').innerHTML =
+      table('bt-cb','Capacity building','Each category has its own budget',cb) +
+      table('bt-flex','Core, flexible','Funds can be used across these categories, so the total is what matters',flex,flexFoot) +
+      table('bt-stated','Core, stated','Fixed to the named support',stated);
+    if(window.makeSortable) $$('#budget-tables table').forEach(t=>makeSortable(t,t.getAttribute('aria-labelledby')));
+  }
+  /* link to the Invoices page filtered to one provider */
+  function invLink(name){
+    const q=name.replace(/"/g,'&quot;');
+    return `<button class="icotip invbtn" type="button" data-prov-panel="${q}" aria-label="View invoices from ${q}" data-tip="View invoices for this provider"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-file-text"/></svg></button>`;
+  }
+  function catInvLink(c){
+    const n=INVOICES.filter(i=>i.cat===c.id).length;
+    const ico='<svg class="i" aria-hidden="true" focusable="false"><use href="#i-file-text"/></svg>';
+    const nn=(NOTES[c.id]||[]).length;
+    const note=`<button class="icotip invbtn notebtn" type="button" data-notes="${c.id}" aria-label="Notes for ${c.name}, ${nn} note${nn===1?'':'s'}" data-tip="${nn?`View notes (${nn})`:'Add a note'}"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-message-square"/></svg>${nn?`<span class="ncount" aria-hidden="true">${nn}</span>`:''}</button>`;
+    return `<span class="rowicons"><button class="icotip invbtn" type="button" data-cat-panel="${c.id}" aria-label="View invoices for ${c.name}" data-tip="View invoices for this support category">${ico}</button></span>`;
+  }
+  /* Used %: over 75% is called out (nearly spent), over 100% as overspent. Icon + text, not colour alone. */
+  function usedCell(used,p){
+    if(used===null) return '<span class="mutedtext">N/A</span>';
+    /* tooltip explains the figure: share of the allocation that is spent or pending */
+    const tip=`${pct(used)} of the ${money(p.assigned)} allocation is spent or pending: ${money(p.spent)} spent + ${money(p.pending)} pending`;
+    const wrap=(cls,inner,sr)=>`<span class="usedtip ${cls}" tabindex="0" data-tip="${tip}">${inner}<span class="sr">${sr}. ${tip}</span></span>`;
+    if(used>1) return wrap('usedflag over',`${pct(used)}<svg class="i" aria-hidden="true" focusable="false"><use href="#i-octagon-alert"/></svg>`,', overspent');
+    if(used>0.75) return wrap('usedflag warn',`${pct(used)}<svg class="i" aria-hidden="true" focusable="false"><use href="#i-triangle-alert"/></svg>`,', nearly spent');
+    return wrap('',pct(used),'');
+  }
+  /* provider budget filters: provider and support category, same pattern as Invoices */
+  const pfProv=$('#pf-prov'), pfCat=$('#pf-cat');
+  [...new Set(PROVIDERS.map(p=>p.name))].sort().forEach(n=>pfProv.insertAdjacentHTML('beforeend',`<option>${n}</option>`));
+  [...new Set(PROVIDERS.map(p=>p.cat))].forEach(id=>pfCat.insertAdjacentHTML('beforeend',`<option value="${id}">${catById(id).name}</option>`));
+  [pfProv,pfCat].forEach(el=>el.addEventListener('change',()=>renderProviders()));
+  $('#pf-clear').addEventListener('click',()=>{pfProv.value='';pfCat.value='';renderProviders();});
+  function renderProviders(){
+    const tb=$('#provider-table tbody'); tb.innerHTML='';
+    [pfProv,pfCat].forEach(el=>el.classList.toggle('is-set',!!el.value));
+    const list=PROVIDERS.filter(p=>(!pfProv.value||p.name===pfProv.value)&&(!pfCat.value||p.cat===pfCat.value));
+    $('#prov-empty').hidden=list.length>0;
+    list.forEach(p=>{const c=catById(p.cat);const rem=p.assigned===null?null:p.assigned-p.spent-p.pending;const used=p.assigned?(p.spent+p.pending)/p.assigned:null;
+      tb.insertAdjacentHTML('beforeend',`<tr><td>${p.name}</td><td class="cat">${c.name}<small>${c.purpose}</small></td><td>${p.mgmt}</td><td class="num">${p.assigned===null?'<span class="mutedtext">No allocation</span>':money(p.assigned)}</td><td class="num">${money(p.spent)}</td><td class="num">${money(p.pending)}</td><td class="num">${rem===null?'<span class="mutedtext">N/A</span>':money(rem)}</td><td class="num">${usedCell(used,p)}</td><td class="rowact">${invLink(p.name)}</td></tr>`);});
+  }
+
+  /* invoices: read only, download is the only action */
+  const fProv=$('#flt-prov'), fCat=$('#flt-cat'), fStat=$('#flt-status'), fFrom=$('#flt-from'), fTo=$('#flt-to');
+  [...new Set(INVOICES.map(i=>i.prov))].sort().forEach(p=>fProv.insertAdjacentHTML('beforeend',`<option>${p}</option>`));
+  function renderInvoices(){
+    /* active filter state: a filter with a value other than its 'All' default is outlined in DS primary */
+    [fProv,fCat,fStat,fFrom,fTo].forEach(el=>el.classList.toggle('is-set',!!el.value));
+    const list=INVOICES.filter(i=>(!fProv.value||i.prov===fProv.value)&&(!fCat.value||i.cat===fCat.value)&&(!fStat.value||i.status===fStat.value)&&(!fFrom.value||i.start>=fFrom.value)&&(!fTo.value||i.end<=fTo.value));
+    const tb=$('#invoice-table tbody'); tb.innerHTML='';
+    list.forEach(i=>{const cls=({'Approved':'approved','Rejected':'rejected','On hold by client':'hold','On hold by plan manager':'hold'})[i.status]||'awaiting';
+      tb.insertAdjacentHTML('beforeend',`<tr><td>${i.no}</td><td>${i.prov}</td><td>${catById(i.cat).name}</td><td>${fmtDate(i.date)}</td><td data-sort-value="${i.start}">${fmtPeriod(i.start,i.end)}</td><td class="num">${money(i.amount)}</td><td><span class="status ${cls}">${i.status}</span></td><td>${approvedOn(i)?fmtDate(approvedOn(i)):'Not sent'}</td></tr>`);});
+    $('#inv-empty').hidden=list.length>0;
+    invTotal=sum(list,'amount'); invPage=1;
+    setTimeout(pageInvoices,0);   /* after any re-sort of the new rows */
+  }
+  /* pagination: 10 rows per page, applied to the rows in their current (sorted) order */
+  const INV_PER=10; let invPage=1, invTotal=0;
+  function pageInvoices(){
+    const rows=[...$('#invoice-table tbody').rows], n=rows.length, pages=Math.max(1,Math.ceil(n/INV_PER));
+    invPage=Math.min(Math.max(1,invPage),pages);
+    rows.forEach((r,i)=>r.hidden=Math.floor(i/INV_PER)+1!==invPage);
+    const from=n?(invPage-1)*INV_PER+1:0, to=Math.min(n,invPage*INV_PER);
+    $('#inv-count').innerHTML=n?`Showing ${from}–${to} of ${n} invoices · <b>${money(invTotal)} total</b>`:'No invoices to show';
+    const chev=d=>`<svg class="i" aria-hidden="true" focusable="false"><use href="#i-chevron-${d}"/></svg>`;
+    let h=`<button type="button" class="pg pg-step" data-pg="${invPage-1}" ${invPage===1?'disabled':''}>${chev('left')}Previous</button>`;
+    for(let p=1;p<=pages;p++) h+=`<button type="button" class="pg" data-pg="${p}" ${p===invPage?'aria-current="page"':''} aria-label="Page ${p}">${p}</button>`;
+    h+=`<button type="button" class="pg pg-step" data-pg="${invPage+1}" ${invPage===pages?'disabled':''}>Next${chev('right')}</button>`;
+    $('#inv-pager').innerHTML=h;
+  }
+  $('#inv-pager').addEventListener('click',e=>{const b=e.target.closest('[data-pg]'); if(!b||b.disabled) return; invPage=+b.dataset.pg; pageInvoices(); const c=$('#inv-pager [aria-current="page"]'); if(c) c.focus();});
+  CATS.forEach(c=>fCat.insertAdjacentHTML('beforeend',`<option value="${c.id}">${c.name}</option>`));
+  [fProv,fCat,fStat,fFrom,fTo].forEach(el=>el.addEventListener('change',renderInvoices));
+  $('#flt-clear').addEventListener('click',()=>{[fProv,fCat,fStat,fFrom,fTo].forEach(el=>el.value='');renderInvoices();});
+
+  /* navigation */
+  const TITLES={budget:'Plan overview',spending:'Spending vs budget',providers:'Provider budgets',invoices:'Invoices',documents:'Documents',changes:'Scheduled changes',expired:'Expired engagement / plans',sos:'Schedules of support',history:'History'};
+  /* page subtitles shown under the H1 */
+  const SUBTITLES={providers:'What each provider has been allocated and how much is spent under a support category'};
+  function renderTab(id){
+    $$('#side-sections [data-tab]').forEach(b=>{ if(b.dataset.tab===id) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current'); });
+    $$('.tab-panel').forEach(p=>p.hidden=p.id!=='tab-'+id);
+    const isSummary = id==='budget';   /* Plan overview uses the participant header */
+    $('#summary-header').hidden = !isSummary;
+    $('#section-header').hidden = isSummary;
+    if(!isSummary) $('#section-title').textContent = TITLES[id];
+    const sub=SUBTITLES[id]||''; $('#section-sub').textContent=sub; $('#section-sub').hidden=!sub;
+    $('#crumb-section').textContent = TITLES[id];
+    window.scrollTo({top:0});
+  }
+  /* Unique URL per tab for tracking: ?view=<slug>. Back and forward move between tabs. */
+  const SLUGS={budget:'plan-overview',providers:'provider-budgets',spending:'spending-vs-budget',invoices:'invoices',documents:'documents',changes:'scheduled-changes',expired:'expired-plans',history:'history'};
+  const IDS=Object.fromEntries(Object.entries(SLUGS).map(([k,v])=>[v,k]));
+  function tabFromUrl(){ const v=new URLSearchParams(location.search).get('view'); return IDS[v]||'budget'; }
+  function showTab(id,mode){
+    renderTab(id);
+    const url=new URL(location.href); url.searchParams.set('view',SLUGS[id]); url.hash='';
+    if(url.href===location.href) return;
+    try{ if(mode==='replace') history.replaceState({tab:id},'',url); else history.pushState({tab:id},'',url); }catch(e){}
+  }
+  window.addEventListener('popstate',()=>renderTab(tabFromUrl()));
+  $$('#side-sections [data-tab]').forEach(t=>t.addEventListener('click',()=>showTab(t.dataset.tab)));
+  document.addEventListener('click',e=>{
+    const g=e.target.closest('[data-goto]');
+    if(g){showTab(g.dataset.goto);
+      if(g.dataset.goto==='invoices'){[fProv,fCat,fStat,fFrom,fTo].forEach(el=>el.value='');
+        if(g.dataset.prov)fProv.value=g.dataset.prov;
+        if(g.dataset.cat)fCat.value=g.dataset.cat;
+        renderInvoices();
+        if(g.dataset.prov||g.dataset.cat){const h=$('#section-title'); h.setAttribute('tabindex','-1'); h.focus();}}}
+    const od=e.target.closest('[data-open-drawer]');
+    if(od){openLayer($('#drawer'),$('#scrim'),od,$('#drawer-close'));}
+    const cm=e.target.closest('[data-cat-modal]');
+    if(cm){
+      let name, released;
+      if(cm.dataset.catId){ const c=catById(cm.dataset.catId); name=c.name; released=c.released; }
+      else { name=cm.dataset.name; released=parseFloat(cm.dataset.amount); }
+      openCategoryModal(name, released, cm);
+    }
+  });
+  /* info toggletips on Plan budget table headings: click to show, Escape or click elsewhere to hide */
+  const closeTips=except=>$$('.infobtn[aria-expanded="true"]').forEach(b=>{ if(b===except) return; b.setAttribute('aria-expanded','false'); $('#'+b.getAttribute('aria-controls')).hidden=true; });
+  document.addEventListener('click',e=>{
+    const b=e.target.closest('.infobtn');
+    if(b){ const open=b.getAttribute('aria-expanded')!=='true'; closeTips(b); b.setAttribute('aria-expanded',String(open)); $('#'+b.getAttribute('aria-controls')).hidden=!open; return; }
+    if(!e.target.closest('.infopop')) closeTips();
+  });
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ const o=$('.infobtn[aria-expanded="true"]'); if(o){ closeTips(); o.focus(); } } });
+
+  /* a11y v3: dialog layers. Background is made inert while open, focus moves in, and returns to the trigger on close. */
+  const BG=['.demo','.topbar','.shell'];
+  let layerStack=[];
+  function openLayer(el, scrim, trigger, focusEl){
+    el.classList.add('open'); scrim.classList.add('open');
+    BG.forEach(s=>{const n=$(s); if(n) n.inert=true;});
+    layerStack.forEach(l=>l.el.inert=true);
+    layerStack.push({el, scrim, trigger});
+    setTimeout(()=>focusEl.focus(),0);
+  }
+  function closeLayer(el){
+    const i=layerStack.findIndex(l=>l.el===el); if(i<0) return;
+    const l=layerStack.splice(i,1)[0];
+    el.classList.remove('open'); l.scrim.classList.remove('open');
+    if(layerStack.length){ layerStack[layerStack.length-1].el.inert=false; }
+    else BG.forEach(s=>{const n=$(s); if(n) n.inert=false;});
+    if(l.trigger && document.contains(l.trigger)) l.trigger.focus();
+    else if(l.trigger && l.trigger.dataset.notes){ const nb=document.querySelector(`[data-notes="${l.trigger.dataset.notes}"]`); if(nb) nb.focus(); }  /* table was re-rendered after adding a note */
+  }
+  /* keep Tab inside the open layer (fallback where inert is unsupported) */
+  document.addEventListener('keydown',e=>{
+    if(e.key!=='Tab'||!layerStack.length) return;
+    const el=layerStack[layerStack.length-1].el;
+    const f=[...el.querySelectorAll('button,[href],select,input,textarea,[tabindex]:not([tabindex="-1"])')].filter(x=>!x.disabled&&x.offsetParent!==null);
+    if(!f.length) return;
+    const first=f[0], last=f[f.length-1];
+    if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+    else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+  });
+  const closeDrawer=()=>closeLayer($('#drawer'));
+  /* notes side panel (opened from the notes icon on each Plan overview row) */
+  let ndCat='';
+  function renderNotes(){
+    const list=(NOTES[ndCat]||[]).slice().sort((a,b)=>b.dt.localeCompare(a.dt));
+    $('#nd-list').innerHTML=list.map(n=>`<li><div class="nd-meta"><b>${escHtml(n.by)}</b><span>${fmtDate(n.dt.slice(0,10))} ${fmtTime(n.dt.slice(11))}</span></div><p>${escHtml(n.text)}</p></li>`).join('');
+    $('#nd-empty').hidden=list.length>0;
+  }
+  function openNotes(id, trigger){
+    ndCat=id; $('#nd-title').textContent=`Notes: ${catById(id).name}`; $('#nd-text').value=''; $('#nd-err').hidden=true; $('#nd-ok').hidden=true; $('#nd-text').removeAttribute('aria-invalid');
+    renderNotes(); openLayer($('#notes-drawer'),$('#scrim'),trigger,$('#nd-close')); $('#notes-drawer').scrollTop=0;
+  }
+  $('#nd-close').addEventListener('click',()=>closeLayer($('#notes-drawer')));
+  $('#nd-save').addEventListener('click',()=>{
+    const t=$('#nd-text').value.trim();
+    if(!t){ $('#nd-err').hidden=false; $('#nd-text').setAttribute('aria-invalid','true'); $('#nd-text').focus(); return; }
+    $('#nd-err').hidden=true; $('#nd-text').removeAttribute('aria-invalid');
+    const now=new Date(), hh=String(now.getHours()).padStart(2,'0'), mm=String(now.getMinutes()).padStart(2,'0');
+    (NOTES[ndCat]=NOTES[ndCat]||[]).push({dt:`2026-09-22T${hh}:${mm}`,by:'Priya Nair',text:t});
+    $('#nd-text').value=''; renderNotes(); $('#nd-ok').hidden=false; renderBudget();
+  });
+  document.addEventListener('click',e=>{ const b=e.target.closest('[data-notes]'); if(b) openNotes(b.dataset.notes,b); });
+
+  /* invoices side panel: opened from the icon on each Provider budgets row (by provider) or Plan overview row (by support category) */
+  let pdProv='', pdMode='prov';
+  const PD_LATEST=10;
+  const stCls=s=>({'Approved':'approved','Rejected':'rejected','On hold by client':'hold','On hold by plan manager':'hold'})[s]||'awaiting';
+  function renderProvInvoices(){
+    /* the 10 latest invoices, newest first (sortable); the full list is on the Invoices tab */
+    const all=INVOICES.filter(i=>pdMode==='cat'?i.cat===pdProv:i.prov===pdProv).sort((a,b)=>b.date.localeCompare(a.date)), list=all.slice(0,PD_LATEST);
+    $('#pd-table tbody').innerHTML=list.map(i=>`<tr><td><b>${i.no}</b>${pdMode==='cat'?`<span class="pd-prov">${i.prov}</span>`:''}</td><td>${fmtDate(i.date)}</td><td data-sort-value="${i.start}">${fmtPeriod(i.start,i.end)}</td><td class="num">${money(i.amount)}</td><td><span class="status ${stCls(i.status)}">${i.status}</span></td><td class="rowact"><span class="rowicons"><button class="icotip invbtn" type="button" aria-label="View invoice ${i.no}" data-tip="View invoice"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-eye"/></svg></button><button class="icotip invbtn" type="button" aria-label="Download invoice ${i.no}" data-tip="Download invoice">${dl}</button></span></td></tr>`).join('');
+    $('#pd-empty').hidden=list.length>0;
+    $('#pd-count').innerHTML=all.length?`Showing latest <b>${list.length} of ${all.length}</b> invoice${all.length===1?'':'s'} for this ${pdMode==='cat'?'support category':'provider'}`:'';
+    $('#pd-empty-msg').textContent=`No invoices yet for this ${pdMode==='cat'?'support category':'provider'}.`;
+  }
+  function openProvInvoices(name, trigger){
+    pdMode='prov'; $('#pd-all').textContent='View all invoices for this provider';
+    pdProv=name; delete SORTS['prov-invoices']; paintHeaders($('#pd-table'));   /* each provider opens newest first */
+    const p=PROVIDERS.find(x=>x.name===name), c=p?catById(p.cat):null;
+    $('#pd-title').textContent=`Invoices: ${name}`;
+    $('#pd-sub').textContent=c?`${c.name} · ${p.mgmt}`:'';
+    renderProvInvoices();
+    openLayer($('#prov-drawer'),$('#scrim'),trigger,$('#pd-close')); $('#prov-drawer').scrollTop=0;
+  }
+  function openCatInvoices(id, trigger){
+    const c=catById(id); pdMode='cat'; pdProv=id; delete SORTS['prov-invoices']; paintHeaders($('#pd-table'));   /* each category opens newest first */
+    $('#pd-title').textContent=`Invoices: ${c.name}`;
+    $('#pd-sub').textContent=`${c.purpose} · ${c.mgmt||'Plan managed'}`;
+    $('#pd-all').textContent='View all invoices for this support category';
+    renderProvInvoices();
+    openLayer($('#prov-drawer'),$('#scrim'),trigger,$('#pd-close')); $('#prov-drawer').scrollTop=0;
+  }
+  $('#pd-close').addEventListener('click',()=>closeLayer($('#prov-drawer')));
+  $('#pd-all').addEventListener('click',()=>{ const key=pdProv, mode=pdMode; closeLayer($('#prov-drawer')); showTab('invoices'); [fProv,fCat,fStat,fFrom,fTo].forEach(el=>el.value=''); if(mode==='cat') fCat.value=key; else fProv.value=key; renderInvoices(); const h=$('#section-title'); h.setAttribute('tabindex','-1'); h.focus(); });
+  document.addEventListener('click',e=>{ const b=e.target.closest('[data-prov-panel]'); if(b) openProvInvoices(b.dataset.provPanel,b); const k=e.target.closest('[data-cat-panel]'); if(k) openCatInvoices(k.dataset.catPanel,k); });
+  $('#drawer-close').addEventListener('click',closeDrawer); $('#scrim').addEventListener('click',()=>{ if(layerStack.length) closeLayer(layerStack[layerStack.length-1].el); });
+
+  /* per-category funding period schedule */
+  const monthsBetween=(a,b)=>(b.getFullYear()-a.getFullYear())*12+(b.getMonth()-a.getMonth());
+  const addMonths=(d,n)=>{const r=new Date(d); r.setMonth(r.getMonth()+n); return r;};
+  const round2=n=>Math.round(n*100)/100;
+  function buildSchedule(released){
+    const totalMonths = monthsBetween(PLAN.start, PLAN.end);
+    const periods=[];
+    for(let i=0;i<totalMonths;i++){
+      const pStart=addMonths(PLAN.start,i), pEndExcl=addMonths(PLAN.start,i+1), pEnd=new Date(pEndExcl-DAY);
+      const isCurrent = PLAN.today>=pStart && PLAN.today<pEndExcl;
+      const status = pStart<=PLAN.today ? 'Released' : 'Scheduled';
+      periods.push({label:`${fmtDate(pStart)} to ${fmtDate(pEnd)}`, start:pStart, current:isCurrent, amount:released/totalMonths, status});
+    }
+    let acc=0;
+    periods.forEach((p,i)=>{ if(i<periods.length-1){p.amount=round2(p.amount); acc+=p.amount;} else {p.amount=round2(released-acc);} });
+    return periods;
+  }
+  function openCategoryModal(name, released, trigger){
+    const periods = buildSchedule(released);
+    $('#cat-modal-title').textContent = `${name} funding period schedule`;
+    /* summary as text only (no cards or graphics): released so far of the category total */
+    const tot=st=>Math.round(periods.filter(p=>p.status===st).reduce((a,p)=>a+p.amount,0)*100)/100;
+    const rl=tot('Released'), all=Math.round((rl+tot('Scheduled'))*100)/100;
+    const nx=periods.find(p=>p.status==='Scheduled'), days=nx?Math.max(0,Math.round((nx.start-PLAN.today)/DAY)):0;
+    const nextTxt = nx ? `Next release: <b>${money(nx.amount)}</b> on <b>${fmtDate(nx.start)}</b> (${days} calendar day${days===1?'':'s'} to go).` : 'All funding for this support category has been released.';
+    $('#cat-modal-count').innerHTML = `<p class="cm-sum"><b>${money(rl)}</b> released so far of your total <b>${money(all)}</b> in the support category.<br>${nextTxt}</p>`;
+    $('#cat-modal-tbody').innerHTML = periods.map(p=>`<tr><td>${p.label}${p.current?' <em>(current)</em>':''}</td><td>1 month</td><td class="num">${money(p.amount)}</td><td><span class="rs-pill ${p.status==='Released'?'rel':'sch'}">${p.status}</span></td></tr>`).join('');
+    openLayer($('#cat-modal'),$('#modal-scrim'),trigger,$('#cat-modal-x')); $('#cat-modal').scrollTop=0;
+  }
+  const closeCatModal=()=>closeLayer($('#cat-modal'));
+  $('#cat-modal-close').addEventListener('click',closeCatModal);
+  $('#cat-modal-x').addEventListener('click',closeCatModal);
+  $('#modal-scrim').addEventListener('click',()=>{ if(layerStack.length) closeLayer(layerStack[layerStack.length-1].el); });
+  /* How utilisation is calculated */
+  $('#util-open').addEventListener('click',e=>openLayer($('#util-modal'),$('#modal-scrim'),e.currentTarget,$('#util-modal-close')));
+  const closeUtilModal=()=>closeLayer($('#util-modal'));
+  $('#util-modal-close').addEventListener('click',closeUtilModal);
+  $('#util-modal-x').addEventListener('click',closeUtilModal);
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&layerStack.length){closeLayer(layerStack[layerStack.length-1].el);}});
+
+  /* scheduled changes: add change form */
+  const CHANGES=[];
+  const escHtml=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const fmtTime=t=>{const [h,m]=t.split(':').map(Number); return `${((h+11)%12)+1}:${String(m).padStart(2,'0')} ${h>=12?'PM':'AM'}`;};
+  $('#sc-prov').innerHTML='<option value="">Select a provider</option>'+[...new Set(PROVIDERS.map(p=>p.name))].sort().map(n=>`<option>${n}</option>`).join('');
+  function clearChangeForm(){
+    ['sc-start','sc-end','sc-prov','sc-ndate','sc-ntime','sc-reason'].forEach(id=>{const e=$('#'+id); e.value=''; e.classList.remove('invalid'); e.removeAttribute('aria-invalid');});
+    $$('input[name="sc-notice"]').forEach(r=>r.checked=false);
+    $$('#sc-form .err').forEach(e=>{e.hidden=true; e.textContent='';});
+  }
+  function openChangeForm(){ $('#sc-ok').hidden=true; $('#sc-form').hidden=false; $('#sc-open').hidden=true; $('#sc-start').focus(); }
+  function closeChangeForm(){ $('#sc-form').hidden=true; $('#sc-open').hidden=false; clearChangeForm(); }
+  function setErr(errId, fieldIds, msg){
+    const e=$('#'+errId); e.hidden=!msg; e.textContent=msg||'';
+    fieldIds.forEach(id=>{const f=$('#'+id); f.classList.toggle('invalid',!!msg); if(msg) f.setAttribute('aria-invalid','true'); else f.removeAttribute('aria-invalid');});
+    return !!msg;
+  }
+  function renderChanges(){
+    $('#sc-body').innerHTML=CHANGES.map(c=>`<tr><td>${fmtDate(c.start)}</td><td>${fmtDate(c.end)}</td><td>${escHtml(c.prov)}</td><td>${c.notice}</td><td>${fmtDate(c.nd)} ${fmtTime(c.nt)}</td><td>${escHtml(c.reason)}</td></tr>`).join('');
+    $('#sc-empty').hidden=CHANGES.length>0;
+  }
+  function addChange(){
+    const v={start:$('#sc-start').value, end:$('#sc-end').value, prov:$('#sc-prov').value, notice:(document.querySelector('input[name="sc-notice"]:checked')||{}).value||'', nd:$('#sc-ndate').value, nt:$('#sc-ntime').value, reason:$('#sc-reason').value.trim()};
+    const errs=[
+      setErr('err-start',['sc-start'],!v.start?'Enter a start date':''),
+      setErr('err-end',['sc-end'],!v.end?'Enter an end date':(v.start&&v.end<v.start?'End date must be on or after the start date':'')),
+      setErr('err-prov',['sc-prov'],!v.prov?'Select a provider':''),
+      setErr('err-notice',[],!v.notice?'Select Yes or No':''),
+      setErr('err-ndate',['sc-ndate'],!v.nd?'Enter the notice date':''),
+      setErr('err-ntime',['sc-ntime'],!v.nt?'Enter the notice time':''),
+      setErr('err-reason',['sc-reason'],!v.reason?'Enter a reason':'')
+    ];
+    if(errs.some(Boolean)){ const bad=$('#sc-form .invalid'); (bad||document.querySelector('input[name="sc-notice"]')).focus(); return; }
+    CHANGES.unshift(v); renderChanges(); closeChangeForm();
+    $('#sc-ok').hidden=false; $('#sc-open').focus();
+  }
+  $('#sc-open').addEventListener('click',openChangeForm);
+  $('#sc-cancel').addEventListener('click',closeChangeForm);
+  $('#sc-add').addEventListener('click',addChange);
+  renderChanges();
+
+  /* schedules of support (read only, current schedule only) */
+  const SCHEDULES=[
+    {finalised:'2026-07-09T10:19', items:[
+      {pb:'CM Pricebook - Current', code:'04_106_0125_6_1', name:'Access Community, Social And Rec Activities - Standard - Sunday-QLD', cc:'09203', ratio:'1:1', rate:133.5, unit:'Hour', units:1, freq:1, flags:[], desc:'1:1 Provision of support to enable a participant to engage in community, social and/or recreational activities.'},
+      {pb:'CM Pricebook - Current', code:'04_104_0125_6_1', name:'Access Community, Social And Rec Activities - Standard - Weekday Daytime-QLD', cc:'09203', ratio:'1:1', rate:66.75, unit:'Hour', units:2, freq:4, flags:['FFS'], desc:'1:1 Provision of support to enable a participant to engage in community, social and/or recreational activities.'},
+      {pb:'Plan Management Pricebook', code:'14_034_0127_8_3', name:'Plan Management - Financial Administration-QLD-2020-21 v1.0.5', cc:'09203', ratio:'N/A', rate:104.45, unit:'Month', units:1, freq:1, flags:[], desc:''}
+    ]}
+  ];
+  const fmtStamp=t=>{const [d,tm]=t.split('T'); return `${fmtDate(d)}, ${fmtTime(tm)}`;};
+  function renderSchedules(){
+    $('#sos-list').innerHTML=SCHEDULES.map(sc=>{
+      const fee=i=>i.rate*i.units*i.freq;
+      const rows=sc.items.map(i=>`<tr>
+        <td><div class="pname">${i.name}</div><div class="pcode">${i.code}</div>${i.desc?`<div class="pdesc">${i.desc}</div>`:''}</td>
+        <td>${i.pb}</td><td>${i.cc}</td><td>${i.ratio}</td><td class="num">${money(i.rate)}</td><td>${i.unit}</td><td class="num">${i.units}</td><td class="num">${i.freq}</td><td class="num">${money(fee(i))}</td>
+        <td>${i.flags.length?i.flags.map(f=>`<span class="flag">${f}</span>`).join(''):'<span class="mutedtext">None</span>'}</td></tr>`).join('');
+      return `<div class="panel flat sos">
+        <div class="head"><h2>Schedule of support</h2><span class="mutedtext">Finalised ${fmtStamp(sc.finalised)}</span></div>
+        <div class="body tablewrap"><table class="data">
+          <thead><tr><th>Support item</th><th>Price book</th><th>Cost centre</th><th>Ratio</th><th class="num">Rate ($)</th><th>Unit of measurement</th><th class="num">Units</th><th class="num">Frequency</th><th class="num">Fee</th><th>Flags</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table></div>
+      </div>`;
+    }).join('');
+  }
+  renderSchedules();
+
+  /* history: add note and filters */
+  const HISTORY=[
+    {dt:'2026-08-06T10:07', act:'Plan style updated', by:'AR', desc:"Field 'Booking start date' changed from 11 May 2022 to 01 May 2022"},
+    {dt:'2026-08-06T10:07', act:'Plan style updated', by:'AR', desc:"Field 'Plan start date' changed from 11 May 2022 to 01 May 2022"},
+    {dt:'2026-07-09T10:19', act:'Schedule of support finalised', by:'AR', desc:'Schedule of support finalised'},
+    {dt:'2025-10-14T15:42', act:'Plan updated', by:'PN', desc:'Plan dates set to 15 Oct 2025 to 14 Oct 2027'}
+  ];
+  let hsF={start:'2026-07-22', end:'', staff:'', kw:''};
+  $('#hs-activity').innerHTML=['Client information','Representative information','Support Co-ordination','Plan style','Schedule of Support','Service Agreement','Service booking','Documents'].map(a=>`<option${a==='Plan style'?' selected':''}>${a}</option>`).join('');
+  const hsMatches=r=>{const d=r.dt.slice(0,10); return (!hsF.start||d>=hsF.start)&&(!hsF.end||d<=hsF.end)&&(!hsF.staff||r.by.toLowerCase().includes(hsF.staff.toLowerCase()))&&(!hsF.kw||(r.act+' '+r.desc).toLowerCase().includes(hsF.kw.toLowerCase()));};
+  /* exposed filters: results update as you type or pick a date */
+  const hsEls=['hs-start','hs-end','hs-staff','hs-kw'].map(id=>$('#'+id));
+  function hsApply(){
+    const [st,en,staff,kw]=hsEls.map(el=>el.value.trim());
+    const bad=!!(st&&en&&en<st);
+    $('#err-hs-end').hidden=!bad; $('#hs-end').classList.toggle('invalid',bad); if(bad) $('#hs-end').setAttribute('aria-invalid','true'); else $('#hs-end').removeAttribute('aria-invalid');
+    if(bad) return;
+    hsF={start:st,end:en,staff,kw}; renderHistory();
+  }
+  function hsClearFilters(){ hsEls.forEach(el=>el.value=''); hsApply(); }
+  function renderHistory(){
+    hsEls.forEach(el=>el.classList.toggle('is-set',!!el.value));
+    const rows=HISTORY.filter(hsMatches).sort((a,b)=>b.dt.localeCompare(a.dt));
+    $('#hs-body').innerHTML=rows.map(r=>`<tr><td>${escHtml(r.act)}</td><td>${escHtml(r.by)}</td><td>${escHtml(r.desc)}</td><td class="num">${fmtDate(r.dt.slice(0,10))} ${fmtTime(r.dt.slice(11))}</td></tr>`).join('');
+    $('#hs-empty').hidden=rows.length>0;
+    $('#hs-summary').textContent=`Showing ${rows.length} of ${HISTORY.length} activities`;
+  }
+  function hsShow(which){ $('#hs-add').hidden=which!=='add'; $('#hs-ok').hidden=true; }
+  $('#hs-add-open').addEventListener('click',()=>{ hsShow('add'); $('#hs-note').focus(); });
+  $('#hs-add-cancel').addEventListener('click',()=>{ $('#hs-note').value=''; $('#err-hs-note').hidden=true; $('#hs-note').classList.remove('invalid'); hsShow(''); });
+  $('#hs-add-save').addEventListener('click',()=>{
+    const note=$('#hs-note').value.trim(), bad=!note;
+    $('#err-hs-note').hidden=!bad; $('#err-hs-note').textContent=bad?'Enter a note':''; $('#hs-note').classList.toggle('invalid',bad);
+    if(bad){ $('#hs-note').focus(); return; }
+    const now=new Date(), hh=String(now.getHours()).padStart(2,'0'), mm=String(now.getMinutes()).padStart(2,'0');
+    HISTORY.push({dt:`2026-09-22T${hh}:${mm}`, act:$('#hs-activity').value, by:'PN', desc:note});
+    $('#hs-note').value=''; $('#hs-activity').value='Plan style';
+    hsShow(''); renderHistory(); $('#hs-ok').hidden=false; $('#hs-add-open').focus();
+  });
+  hsEls.forEach(el=>el.addEventListener(el.type==='date'?'change':'input',hsApply));
+  $('#hs-clear').addEventListener('click',hsClearFilters);
+  $('#hs-start').value=hsF.start;   /* default filter, now visible in the bar */
+  renderHistory();
+
+  /* documents: upload with document type */
+  const DOCS=[
+    {name:'Signed plan management agreement', dt:'2025-12-06T10:03', type:'Signed service booking + agreement'},
+    {name:'NDIS plan, 15 Oct 2025 to 14 Oct 2027', dt:'2025-12-05T12:06', type:'NDIS plan'}
+  ];
+  $('#doc-type').innerHTML='<option value="">Select document type</option>'+['COS request','NDIS plan','Service booking + agreement','Signed service booking + agreement','Quote','Consent','Other'].map(t=>`<option>${t}</option>`).join('');
+  function renderDocs(){
+    $('#doc-body').innerHTML=DOCS.slice().sort((a,b)=>b.dt.localeCompare(a.dt)).map(d=>`<tr><td>${escHtml(d.name)}</td><td>${fmtDate(d.dt.slice(0,10))} ${fmtTime(d.dt.slice(11))}</td><td class="rowact"><button type="button" aria-label="Download ${escHtml(d.name)}">${dl}</button></td></tr>`).join('');
+    $('#doc-count').textContent=`Showing 1–${DOCS.length} of ${DOCS.length} document${DOCS.length===1?'':'s'}`;
+  }
+  function clearDocForm(){
+    $('#doc-type').value=''; $('#doc-file').value=''; $('#doc-file-name').textContent='No file chosen';
+    ['doc-type'].forEach(id=>{$('#'+id).classList.remove('invalid'); $('#'+id).removeAttribute('aria-invalid');});
+    $('#err-doc-type').hidden=true; $('#err-doc-file').hidden=true;
+  }
+  function closeDocForm(){ $('#doc-form').hidden=true; $('#doc-open').hidden=false; clearDocForm(); }
+  $('#doc-open').addEventListener('click',()=>{ $('#doc-ok').hidden=true; $('#doc-form').hidden=false; $('#doc-open').hidden=true; $('#doc-type').focus(); });
+  $('#doc-cancel').addEventListener('click',closeDocForm);
+  $('#doc-file').addEventListener('change',()=>{ const f=$('#doc-file').files[0]; $('#doc-file-name').textContent=f?f.name:'No file chosen'; if(f) $('#err-doc-file').hidden=true; });
+  $('#doc-save').addEventListener('click',()=>{
+    const type=$('#doc-type').value, f=$('#doc-file').files[0];
+    const e1=$('#err-doc-type'), e2=$('#err-doc-file');
+    e1.hidden=!!type; e1.textContent=type?'':'Select a document type';
+    $('#doc-type').classList.toggle('invalid',!type); if(!type) $('#doc-type').setAttribute('aria-invalid','true'); else $('#doc-type').removeAttribute('aria-invalid');
+    e2.hidden=!!f; e2.textContent=f?'':'Choose a file to upload';
+    if(!type){ $('#doc-type').focus(); return; }
+    if(!f){ $('#doc-file').focus(); return; }
+    const now=new Date(), hh=String(now.getHours()).padStart(2,'0'), mm=String(now.getMinutes()).padStart(2,'0');
+    DOCS.push({name:f.name, dt:`2026-09-22T${hh}:${mm}`, type});
+    renderDocs(); closeDocForm(); $('#doc-ok').hidden=false; $('#doc-open').focus();
+  });
+  renderDocs();
+
+  /* alerts (illustrative content: built from the sample data) */
+  function renderAlerts(){
+    const items=[];
+    const rows=CATS.map(c=>({c,u:util(c.released,c.spent,c.pending)})).filter(x=>x.u);
+    rows.filter(x=>x.u.status==='over').forEach(x=>items.push({sev:'over', icon:'i-octagon-alert', title:`${chartName(x.c)} is over-utilised`, text:`${money(x.u.committed)} committed against ${money(x.c.released)} released.`, go:'budget', label:'View plan budget'}));
+    const under=rows.filter(x=>x.u.status==='under').sort((a,b)=>b.u.available-a.u.available);
+    if(under.length) items.push({sev:'warn', icon:'i-triangle-alert', title:`${under.length} support ${under.length===1?'category is':'categories are'} under-utilised`, text:`${chartName(under[0].c)} has the most unspent funding, ${money(under[0].u.available)} available.`, go:'budget', label:'View plan budget'});
+    const aw=INVOICES.filter(i=>i.status.startsWith('Awaiting')), pm=aw.filter(i=>i.status==='Awaiting plan manager approval').length, cl=aw.length-pm;
+    if(aw.length) items.push({sev:'info', icon:'i-info', title:`${aw.length} invoice${aw.length===1?' is':'s are'} awaiting approval`, text:`${pm} awaiting plan manager approval, ${cl} awaiting client approval.`, go:'invoices', label:'View invoices'});
+    const none=PROVIDERS.filter(p=>p.assigned===null);
+    if(none.length) items.push({sev:'warn', icon:'i-triangle-alert', title:`${none.length} provider${none.length===1?' has':'s have'} no allocation`, text:`Without an allocation, you won't be notified when spending for ${none.length===1?'this provider':'these providers'} runs high.`, go:'providers', label:'View provider budgets'});
+    $('#alerts').innerHTML=items.length ? items.map(i=>`<li class="${i.sev}"><span class="aic"><svg class="i" aria-hidden="true"><use href="#${i.icon}"/></svg></span><div class="atxt"><b><span class="sr">${({over:'High priority alert: ',warn:'Warning: ',info:'Information: '})[i.sev]}</span>${i.title}</b><span>${i.text}</span></div><button class="linkbtn" type="button" data-goto="${i.go}">${i.label}</button></li>`).join('') : '<li class="none">No alerts. Everything is on track.</li>';
+  }
+
+  /* mode */
+  $$('.demo [data-variant]').forEach(b=>b.addEventListener('click',()=>{variant=b.dataset.variant; integrated=variant==='pace-int'; renderAll();}));
+  function renderAll(){
+    $$('.demo [data-variant]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.variant===variant)));
+    renderHeader();renderChart();renderBudget();renderProviders();renderInvoices();
+  }
+  /* ---- Sortable tables (DS DataTable: chevrons-up-down) ----
+     Every data table on the dashboard sorts by clicking a column header. Sorting reorders the
+     rendered rows, and re-applies after a table re-renders (filters, plan type). Totals in <tfoot> stay put.
+     Blank values (N/A, No allocation) always sort last. Icon-only columns (visually hidden header) don't sort. */
+  const MON={Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
+  const BLANK=new Set(['','N/A','n/a','No allocation','No funds released','No invoices','Not sent']);
+  function cellKey(td){
+    if(td.dataset.sortValue!==undefined) return td.dataset.sortValue;
+    const first=[...td.childNodes].find(n=>n.textContent.trim()!=='');
+    const t=(td.querySelector('small')&&first?first.textContent:td.textContent).trim().replace(/\s+/g,' ');
+    if(BLANK.has(t)) return null;
+    let m=t.match(/^(\d{1,2}) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]* (\d{4})(?: (\d{1,2}):(\d{2}) (AM|PM))?/);
+    if(m){ let h=m[4]?(+m[4]%12)+(m[6]==='PM'?12:0):0; return new Date(+m[3],MON[m[2]],+m[1],h,m[5]?+m[5]:0).getTime(); }
+    m=t.match(/^(-?)\$(-?)([\d,]+(?:\.\d+)?)/); if(m) return (m[1]||m[2]?-1:1)*parseFloat(m[3].replace(/,/g,''));
+    m=t.match(/^(-?[\d,]+(?:\.\d+)?)%/); if(m) return parseFloat(m[1].replace(/,/g,''));
+    if(/^-?[\d,]+(\.\d+)?$/.test(t)) return parseFloat(t.replace(/,/g,''));
+    return t.toLowerCase();
+  }
+  const SORTS={};
+  function sortRows(table){
+    const st=SORTS[table.dataset.sortId]; const tb=table.tBodies[0]; if(!st||!tb) return;
+    const rows=[...tb.rows], m=st.dir==='ascending'?1:-1;
+    rows.sort((a,b)=>{const x=a.cells[st.col]?cellKey(a.cells[st.col]):null, y=b.cells[st.col]?cellKey(b.cells[st.col]):null;
+      if(x===null&&y===null) return 0; if(x===null) return 1; if(y===null) return -1;
+      return (typeof x==='string'||typeof y==='string'?String(x).localeCompare(String(y)):x-y)*m;});
+    const o=table._obs; if(o) o.disconnect();
+    rows.forEach(r=>tb.appendChild(r));
+    if(o) o.observe(tb,{childList:true});
+    if(table._afterSort) table._afterSort();
+  }
+  function makeSortable(table, id){
+    table.dataset.sortId=id;
+    [...table.tHead.rows[0].cells].forEach((th,i)=>{
+      if(th.querySelector('.sr')||!th.textContent.trim()) return;           /* icon-only column */
+      if(!th.hasAttribute('scope')) th.setAttribute('scope','col');
+      const label=th.textContent;
+      th.innerHTML=`<button type="button" class="sortbtn">${label}<svg class="i sorti" aria-hidden="true" focusable="false"><use href="#i-chevrons-up-down"/></svg></button>`;
+      th.setAttribute('aria-sort','none');
+      if(th.dataset.tip) th.querySelector('button').setAttribute('aria-description',th.dataset.tip);   /* header tooltip for screen readers */
+      th.querySelector('button').addEventListener('click',()=>{
+        const st=SORTS[id]||{}; st.dir=st.col===i&&st.dir==='ascending'?'descending':'ascending'; st.col=i; SORTS[id]=st;
+        paintHeaders(table); sortRows(table);
+      });
+    });
+    const tb=table.tBodies[0];
+    if(tb){ table._obs=new MutationObserver(()=>sortRows(table)); table._obs.observe(tb,{childList:true}); }
+    paintHeaders(table); sortRows(table);
+  }
+  function paintHeaders(table){
+    const st=SORTS[table.dataset.sortId];
+    [...table.tHead.rows[0].cells].forEach((th,i)=>{ const u=th.querySelector('.sorti use'); if(!u) return;
+      const on=!!st&&st.col===i; th.setAttribute('aria-sort',on?st.dir:'none'); th.classList.toggle('sorted',on);
+      u.setAttribute('href',on?(st.dir==='ascending'?'#i-chevron-up':'#i-chevron-down'):'#i-chevrons-up-down'); });
+  }
+  window.makeSortable=makeSortable;
+
+  showTab(tabFromUrl(),'replace');
+  renderAll();
+  SORTS['invoices']={col:3,dir:'descending'};   /* Invoices opens newest to oldest by invoice date */
+  [['#provider-table','providers'],['#invoice-table','invoices'],['#tab-documents table.data','documents'],['#sc-table','changes'],['#expired-table','expired'],['#tab-history table.data','history']]
+    .forEach(([sel,id])=>{const t=$(sel); if(t) makeSortable(t,id);});
+  makeSortable($('#pd-table'),'prov-invoices');
+  $('#invoice-table')._afterSort=()=>{invPage=1; pageInvoices();};
+})();
+</script>
+
+
+<script type="text/javascript" src="https://api.useberry.com/integrations/liveUrl/scripts/useberryScript.js"></script>
+</body></html>
